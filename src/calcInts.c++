@@ -50,6 +50,7 @@ double T, U, k1q, Q, k2q, qq, mc;
 const int nMatr = 26;
 double matr[nMatr];
 TH1D *hMatr[nMatr];
+TNtuple *tup;
 
 // psi wave function
 double delta;
@@ -126,7 +127,7 @@ void fill_matr() {
 }
 
 void calc_integrals(double s_, int nEv) {
-    
+    Float_t values[nMatr+6];
     
     // clear histograms
     s = s_;
@@ -154,10 +155,15 @@ void calc_integrals(double s_, int nEv) {
         double wave_function = WaveFunction(Q, delta);
 
         for(int i=0; i<nMatr; ++i) {
-            matr[i] *= weight*wave_function;
-            hMatr[i]->Fill(cosPsi,matr[i]);
-        }
-        
+            hMatr[i]->Fill(cosPsi,matr[i]*weight*wave_function);
+            values[i]=matr[i];
+        };
+        values[nMatr+1]=s;
+        values[nMatr+2]=cosPsi;
+        values[nMatr+3]=weight;
+        values[nMatr+4]=wave_function;
+        values[nMatr+5]=Q*Q;
+        tup->Fill(values);
         if (debug) {
             cout<<" weight="<<weight<<endl;
             cout<<" delta="<<delta<<endl;
@@ -207,12 +213,28 @@ int main(int argc, char **argv) {
     if(argc>1) s=atof(argv[1]);
     if(argc>2) delta=atof(argv[2]);
     if(argc>3) nEv=atof(argv[3]);
+
+
     
     cout<<" s="<<s<<" delta="<<delta<<" nEv="<<nEv<<endl;
     cout<<" seed="<<random_generator.get_seed()<<endl;
     
     
     TFile file("matr.root", "RECREATE");
+    // create tuple
+    string field_names="";      
+    for(int i=0; i<=nMatr; ++i) {
+        field_names +="matr_"+i_to_string(i)+":";
+    };
+    field_names+="s:";
+    field_names+"cosPsi:";
+    field_names+="weight:";
+    field_names+="wave_function:";
+    field_names+="q2";
+    cout<<field_names<<endl;
+    tup=new TNtuple("tup","tup",field_names.c_str());
+    
+    
     // init histograms
     for (int i = 0; i < nMatr; ++i) {
         string name = "hMatr_" + i_to_string(i);
@@ -241,10 +263,11 @@ int main(int argc, char **argv) {
     
     // save histograms
     for (int i = 0; i < nMatr; ++i) {
-        hMatr[i]->Write();
+//        hMatr[i]->Write();
         string fileName=data_path+"hMatr"+i_to_string(i)+".hst";
         saveHST(hMatr[i],fileName.c_str());
     };
+    tup->Write();
     file.Save();
 
 
