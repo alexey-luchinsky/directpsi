@@ -145,7 +145,7 @@ void calc_integrals(double s_, int nEv) {
     ramCM.setMass(1, 0.);
 
     for (int iEv = 0; iEv < nEv; ++iEv) {
-        bool debug = (iEv < 0);
+        bool debug = (iEv < 3);
         if (iEv % (nEv / 10) == 0) cout << iEv << endl;
         if (debug) cout << "--------------- Debug print at iEv=" << iEv << "-------------" << endl;
         double weight = gen_event(debug);
@@ -168,6 +168,7 @@ void calc_integrals(double s_, int nEv) {
             cout<<" weight="<<weight<<endl;
             cout<<" delta="<<delta<<endl;
             cout << " WF=" << wave_function << endl;
+            cout<<" values[nMatr+2]="<<values[nMatr+2]<<endl;
         };
 
     };
@@ -227,9 +228,9 @@ int main(int argc, char **argv) {
         field_names +="matr_"+i_to_string(i)+":";
     };
     field_names+="s:";
-    field_names+"cosPsi:";
-    field_names+="weight:";
-    field_names+="wave_function:";
+    field_names+="cosPsi:";
+    field_names+="wt:";
+    field_names+="wf:";
     field_names+="q2";
     cout<<field_names<<endl;
     tup=new TNtuple("tup","tup",field_names.c_str());
