@@ -1,0 +1,33 @@
+INCLUDE(SetCompileFlag.cmake)
+
+cmake_minimum_required(VERSION 2.6)
+project(directPsi CXX Fortran)
+
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/build)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+
+
+## include CERN ROOT
+include(FindROOT.cmake)
+
+
+## set fortran flags
+SET_COMPILE_FLAG(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS}"
+                 Fortran "-fno-automatic")
+
+
+
+include_directories(~/local/include)
+
+
+include_directories(src)
+include_directories(${ROOT_INCLUDE_DIR})
+include_directories(/usr/local/Cellar/boost/1.58.0/include/)
+include_directories(./)
+
+# adding sources for calcInts
+file(GLOB_RECURSE calcInt_SOURCES "src/*.c++" "src/*.cpp" "src/*.for" )
+list(REMOVE_ITEM calcInt_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/partonic.c++")
+list(REMOVE_ITEM calcInt_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/matr.c++")
+add_executable (calcInts.exe "src/calcInts.c++" ${calcInt_SOURCES})
+target_link_libraries(calcInts.exe ${ROOT_LIBRARIES})
