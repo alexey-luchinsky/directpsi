@@ -127,7 +127,7 @@ void fill_matr() {
 }
 
 void calc_integrals(double s_, int nEv) {
-    Float_t values[nMatr+6];
+    Float_t values[nMatr+7];
     
     // clear histograms
     s = s_;
@@ -163,6 +163,7 @@ void calc_integrals(double s_, int nEv) {
         values[nMatr+3]=weight;
         values[nMatr+4]=wave_function;
         values[nMatr+5]=Q*Q;
+        values[nMatr+6]=delta;
         tup->Fill(values);
         if (debug) {
             cout<<" weight="<<weight<<endl;
@@ -221,7 +222,8 @@ int main(int argc, char **argv) {
     cout<<" seed="<<random_generator.get_seed()<<endl;
     
     
-    TFile file("matr.root", "RECREATE");
+    string tuple_file_name="matr_"+f_to_string(s)+"_"+f_to_string(delta)+".root";
+    TFile file(tuple_file_name.c_str(), "RECREATE");
     // create tuple
     string field_names="";      
     for(int i=0; i<=nMatr; ++i) {
@@ -231,7 +233,8 @@ int main(int argc, char **argv) {
     field_names+="cosPsi:";
     field_names+="wt:";
     field_names+="wf:";
-    field_names+="q2";
+    field_names+="q2:";
+    field_names+="delta";
     cout<<field_names<<endl;
     tup=new TNtuple("tup","tup",field_names.c_str());
     
