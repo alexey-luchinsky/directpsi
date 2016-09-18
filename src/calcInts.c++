@@ -46,6 +46,7 @@ rambo2 ramCM;
 EvtVector4R k1, k2, P, k3, q;
 double Mcc, s;
 double T, U, k1q, Q, k2q, qq, mc;
+double NG, NJ0, NJ1, NJ2;
 
 const int nMatr = 26;
 double matr[nMatr];
@@ -98,6 +99,10 @@ double gen_event(bool debug) {
 }
 
 void fill_matr() {
+    NG=1./sqrt(s*T*U);
+    NJ0=2./sqrt(s*T*U);
+    NJ1=1./sqrt(s*T*U);
+    NJ2=1./Mcc;
     matr[0] = calc_matr0();
     matr[1] = calc_matr1();
     matr[2] = calc_matr2();
@@ -252,10 +257,10 @@ int main(int argc, char **argv) {
     cout<<"s="<<s<<" delta="<<delta<<endl;
     string data_path="dat/"+f_to_string(s)+"_"+f_to_string(delta)+"/";
     // check if file exists
-    if(file_exists(data_path+"hMatr0.hst")) {
-        cout<<"file exists already, exiting"<<endl;
-        return 0;
-    }
+//    if(file_exists(data_path+"hMatr0.hst")) {
+//        cout<<"file exists already, exiting"<<endl;
+//        return 0;
+//    }
     system(("mkdir -p "+data_path).c_str());
     calc_integrals(s, nEv);
 
