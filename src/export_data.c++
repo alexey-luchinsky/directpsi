@@ -37,15 +37,21 @@ int main(int argc, char **argv) {
     TFile file(argv[1],"READ");
     TNtuple *tup=(TNtuple*)file.Get("tup");
     cout<<tup->GetEntries()<<" entries "<<endl;
-    TH1D *hist=new TH1D("h","h",20,-1,1);
-    hist->Sumw2();
+    TH1D *hist0=new TH1D("h0","h0",20,-1,1);  hist0->Sumw2();
+    TH1D *hist10=new TH1D("h10","h10",20,-1,1);  hist10->Sumw2();
     
-    tup->Project("h","cosPsi","matr_1*wt*wf");
-    hist->Scale(1./tup->GetEntries());
-    saveHST(hist,"h1.hst",true);
-    
-    hist->Reset();
-    tup->Project("h","cosPsi","matr_2*wt*wf");
-    hist->Scale(1./tup->GetEntries());
-    saveHST(hist,"h2.hst",true);
+    float weight, wf, cosPsi, q2, matr0, matr10;
+    tup->SetBranchAddress("wt",&weight);
+    tup->SetBranchAddress("cosPsi",&cosPsi);
+    tup->SetBranchAddress("matr_0",&matr0);
+    tup->SetBranchAddress("matr_10",&matr10);
+    for(int i=0; i<tup->GetEntries(); ++i) {
+        tup->GetEntry(i);
+//        if(i<10) 
+//            cout<<"i="<<i<<" wt="<<weight<<" wf="<<wf<<" matr0="<<matr0<<endl;
+        hist0->Fill(cosPsi,matr0*weight);
+        hist10->Fill(cosPsi,matr10*weight);
+    }
+    hist0->Scale(1./tup->GetEntries());  saveHST(hist0,"matr0.hst",true);
+    hist10->Scale(1./tup->GetEntries());  saveHST(hist10,"matr10.hst",true);
 }

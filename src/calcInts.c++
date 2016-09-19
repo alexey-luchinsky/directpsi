@@ -159,7 +159,7 @@ void calc_integrals(double s_, int nEv) {
         double wave_function = WaveFunction(Q, delta);
 
         for(int i=0; i<nMatr; ++i) {
-            hMatr[i]->Fill(cosPsi,matr[i]*weight*wave_function);
+            hMatr[i]->Fill(cosPsi,matr[i]*weight);
             values[i]=matr[i];
         };
         values[nMatr+1]=s;
@@ -265,9 +265,9 @@ int main(int argc, char **argv) {
 
 
     // normalize histograms
-    double int0 = hMatr[0]->Integral();
+//    double int0 = hMatr[0]->Integral();
     for (int i = 0; i < nMatr; ++i)
-        hMatr[i]->Scale(1. / int0); // normalize integrals to intQ(1)
+        hMatr[i]->Scale(1. / nEv); // normalize integrals to intQ(1)
     
     // save histograms
     for (int i = 0; i < nMatr; ++i) {
