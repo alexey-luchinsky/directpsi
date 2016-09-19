@@ -36,22 +36,31 @@ int main(int argc, char **argv) {
     }
     TFile file(argv[1],"READ");
     TNtuple *tup=(TNtuple*)file.Get("tup");
-    cout<<tup->GetEntries()<<" entries "<<endl;
-    TH1D *hist0=new TH1D("h0","h0",20,-1,1);  hist0->Sumw2();
-    TH1D *hist10=new TH1D("h10","h10",20,-1,1);  hist10->Sumw2();
+
+    const int nMatr = 26;
+    float matr[nMatr];
+    TH1D *hMatr[nMatr];
+    for(int iH=0; iH<nMatr; ++iH) {
+        string name="matr_"+i_to_string(iH);
+        tup->SetBranchAddress(name.c_str(), &matr[iH]);
+        name="h"+i_to_string(iH);
+        hMatr[iH]=new TH1D(name.c_str(), name.c_str(), 20, -1, -1);
+        hMatr[iH]->Sumw2();
+    }
+
+
     
-    float weight, wf, cosPsi, q2, matr0, matr10;
+    float weight, wf, cosPsi, q2;
     tup->SetBranchAddress("wt",&weight);
     tup->SetBranchAddress("cosPsi",&cosPsi);
-    tup->SetBranchAddress("matr_0",&matr0);
-    tup->SetBranchAddress("matr_10",&matr10);
     for(int i=0; i<tup->GetEntries(); ++i) {
         tup->GetEntry(i);
-//        if(i<10) 
-//            cout<<"i="<<i<<" wt="<<weight<<" wf="<<wf<<" matr0="<<matr0<<endl;
-        hist0->Fill(cosPsi,matr0*weight);
-        hist10->Fill(cosPsi,matr10*weight);
+        for(int iH=0; iH<nMatr; ++iH)
+            hMatr[iH]->Fill(cosPsi,matr[iH]*weight);
     }
-    hist0->Scale(1./tup->GetEntries());  saveHST(hist0,"matr0.hst",true);
-    hist10->Scale(1./tup->GetEntries());  saveHST(hist10,"matr10.hst",true);
+    for(int iH=0; iH<nMatr; ++iH) {
+        hMatr[iH]->Scale(1./tup->GetEntries());
+        string name="matr_"+i_to_string(iH)+".hst";
+        saveHST(hMatr[iH],name.c_str());
+    }
 }
