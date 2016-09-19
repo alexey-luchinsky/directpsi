@@ -14,6 +14,7 @@ rambo3::rambo3(double ecm_, double m1_, double m2_, double m3_) {
     min_cos=-1, max_cos=1;
     PI=acos(-1);
     setECM(ecm_);
+    random_generator = new Random(0);
 }
 
 void rambo3::setECM(double ecm_) {
@@ -27,11 +28,11 @@ double rambo3::next() {
     WT=1;
     
     // q k3 phase space
-    q2=random_generator.rand(min_q2,max_q2);
+    q2=random_generator->rand(min_q2,max_q2);
     WT *= (max_q2-min_q2);
-    double cosT=random_generator.rand(min_cos,max_cos), sinT=sqrt(1.-cosT*cosT);
+    double cosT=random_generator->rand(min_cos,max_cos), sinT=sqrt(1.-cosT*cosT);
     WT *= (max_cos-min_cos);
-    double phi=random_generator.rand(0,2*PI), sinPhi=sin(phi), cosPhi=cos(phi);
+    double phi=random_generator->rand(0,2*PI), sinPhi=sin(phi), cosPhi=cos(phi);
     WT *= 2*PI;
     double eQ=(ecm*ecm+q2-m3*m3)/(2*ecm);
     double e3=(ecm*ecm+m3*m3-q2)/(2*ecm);
@@ -44,9 +45,9 @@ double rambo3::next() {
     double e1=(q2+m1*m1-m2*m2)/(2*sqrt(q2));
     double e2=(q2+m2*m2-m1*m1)/(2*sqrt(q2));
     mom=sqrt(e1*e1-m1*m1);
-    cosT=random_generator.rand(-1, 1); sinT=sqrt(1.-cosT*cosT);
+    cosT=random_generator->rand(-1, 1); sinT=sqrt(1.-cosT*cosT);
     WT *= 2;
-    phi=random_generator.rand(0,2*PI); sinPhi=sin(phi); cosPhi=cos(phi);
+    phi=random_generator->rand(0,2*PI); sinPhi=sin(phi); cosPhi=cos(phi);
     WT *= 2*PI;
     k1.set(e1,mom*sinT*cosPhi, mom*sinT*sinPhi, mom*cosT);
     k2.set(e2,-mom*sinT*cosPhi, -mom*sinT*sinPhi, -mom*cosT);

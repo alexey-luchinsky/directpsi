@@ -41,7 +41,6 @@ double calc_matr24(); // 1 1 -> 2 1
 double calc_matr25(); // 1 0 -> 1 1
 
 
-Random random_generator(0);
 rambo2 ramCM;
 EvtVector4R k1, k2, P, k3, q;
 double Mcc, s;
@@ -68,12 +67,12 @@ double gen_event(bool debug) {
     k3 = *ramCM.getV(1);
 
     // throw relative quarks momentum
-    Q = random_generator.rand(0, Mcc / 2);
+    Q = ramCM.random_generator->rand(0, Mcc / 2);
     wt *= pow(Q, 2);
-    double cosQ = random_generator.rand(-1., 1.), sinQ = sqrt(1. - cosQ * cosQ);
+    double cosQ = ramCM.random_generator->rand(-1., 1.), sinQ = sqrt(1. - cosQ * cosQ);
     wt *= 2;
     const double PI = acos(-1);
-    double phi = random_generator.rand(0, 2 * PI);
+    double phi = ramCM.random_generator->rand(0, 2 * PI);
     wt *= 2 * PI;
     q.set(0, Q * sinQ * cos(phi), Q * sinQ * sin(phi), Q * cosQ);
     q.applyBoostTo(P);
@@ -221,10 +220,10 @@ int main(int argc, char **argv) {
     if(argc>2) delta=atof(argv[2]);
     if(argc>3) nEv=atof(argv[3]);
 
-
+    
     
     cout<<" s="<<s<<" delta="<<delta<<" nEv="<<nEv<<endl;
-    cout<<" seed="<<random_generator.get_seed()<<endl;
+    cout<<" seed="<<ramCM.random_generator->get_seed()<<endl;
     
     
     string tuple_file_name="matr_"+f_to_string(s)+"_"+f_to_string(delta)+".root";

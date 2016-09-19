@@ -15,6 +15,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include <iostream>
+#include "Random.h"
 using namespace std;
 
 class rambo2 {
@@ -30,6 +31,7 @@ public:
     double next();
     double getWT();
     double rnd(double min=0, double max=1);
+    Random *random_generator;
 private:
     double PI;
     double ecm, m1, m2;

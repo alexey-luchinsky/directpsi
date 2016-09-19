@@ -10,6 +10,7 @@
 rambo2::rambo2(double ecm_, double m1_, double m2_) {
     ecm=ecm_; m1=m1_; m2=m2_;
     PI=acos(-1);
+    random_generator=new Random(0);
 //    std::cout<<rnd()<<std::endl;
 }
 
@@ -51,7 +52,8 @@ double rambo2::getWT() {
 }
 
 double rambo2::rnd(double min, double max) {
-    return min+(max-min)*rand()/RAND_MAX;
+    return random_generator->rand(min,max);
+//    return min+(max-min)*rand()/RAND_MAX;
 }
 
 double rambo2::next() {

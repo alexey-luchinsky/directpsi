@@ -31,6 +31,7 @@ public:
     double min_cos, max_cos, min_q2, max_q2;
     double WT;
     double PI;
+    Random *random_generator;
 };
 
 #endif	/* RAMBO3_H */
