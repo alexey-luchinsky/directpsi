@@ -65,9 +65,8 @@ double gen_event(bool debug) {
 
 void fill_matr() {
     NG=1./sqrt(s*T*U);
-    NJ0=2./sqrt(s*T*U);
-    NJ1=1./sqrt(s*T*U);
-    NJ2=1./Mcc;
+    NJ0=2./sqrt(s*T*U);    NJ1=1./sqrt(s*T*U);    NJ2=1./Mcc;
+    
     matr[0] = calc_matr0();
     matr[1] = calc_matr1();
     matr[2] = calc_matr2();
@@ -97,7 +96,7 @@ void fill_matr() {
 }
 
 void calc_integrals(double s_, int nEv) {
-    Float_t values[nMatr+7];
+    Float_t values[nMatr+5];
     
     // clear histograms
     s = s_;
@@ -127,9 +126,9 @@ void calc_integrals(double s_, int nEv) {
         values[nMatr+1]=s;
         values[nMatr+2]=cosPsi;
         values[nMatr+3]=weight;
-        values[nMatr+4]=0;
-        values[nMatr+5]=Q*Q;
-        values[nMatr+6]=0;
+//        values[nMatr+4]=0;
+        values[nMatr+4]=Q*Q;
+//        values[nMatr+6]=0;
         tup->Fill(values);
         if (debug) {
             cout<<" weight="<<weight<<endl;
@@ -186,9 +185,7 @@ int main(int argc, char **argv) {
     field_names+="s:";
     field_names+="cosPsi:";
     field_names+="wt:";
-    field_names+="wf:";
-    field_names+="q2:";
-    field_names+="delta";
+    field_names+="q2";
     cout<<field_names<<endl;
     tup=new TNtuple("tup","tup",field_names.c_str());
     
