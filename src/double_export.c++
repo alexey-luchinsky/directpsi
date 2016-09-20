@@ -28,7 +28,7 @@ void saveHST2(TH2D *hist, TString name, bool print = false) {
     for(int iX=1; iX<=hist->GetNbinsX(); ++iX) {
         for(int iY=1; iY<=hist->GetNbinsY(); ++iY) {
             double x_=hist->GetXaxis()->GetBinCenter(iX);
-            double y_=hist->GetXaxis()->GetBinCenter(iY);
+            double y_=hist->GetYaxis()->GetBinCenter(iY);
             double z_=hist->GetBinContent(iX,iY);
             fprintf(file,"%e %e %e\n",x_,y_,z_);
         }
@@ -74,8 +74,17 @@ int main(void) {
 
     for(int i=0; i<nMatr; ++i)
         hMatr[i]->Write();
-    saveHST2(hMatr[1],"h1.hst2");
+//    saveHST2(hMatr[1],"h1.hst2");
+//    saveHST2(hMatr[2],"h2.hst2");
     
+    hMatr[1]->Scale(1./tup->GetEntries());
+    saveHST2(hMatr[1],"h1.hst2");
+
+//    for(int iH=2; iH<5; ++iH) {
+////        hMatr[iH]->Scale(1./tup->GetEntries());
+//        string name="h"+i_to_string(iH)+".hst2";
+//        saveHST2(hMatr[iH],name.c_str());
+//    }
     out_file.Save();
 
     return 0;
