@@ -63,6 +63,7 @@ int main(int argc, char **argv) {
     TFile file(in_name.c_str(),"READ");
     TNtuple *tup=(TNtuple*)file.Get("tup");
 
+    
     const int nMatr = 26;
     float matr[nMatr];
     TH1D *hMatr[nMatr];
@@ -70,7 +71,7 @@ int main(int argc, char **argv) {
         string name="matr_"+i_to_string(iH);
         tup->SetBranchAddress(name.c_str(), &matr[iH]);
         name="h"+i_to_string(iH);
-        hMatr[iH]=new TH1D(name.c_str(), name.c_str(), 20, -1, -1);
+        hMatr[iH]=new TH1D(name.c_str(), name.c_str(), 50, -1, 1);
         hMatr[iH]->Sumw2();
     }
 
@@ -90,4 +91,19 @@ int main(int argc, char **argv) {
         string name=out_name+i_to_string(iH)+".hst";
         saveHST(hMatr[iH],name.c_str());
     }
+    
+    // save pT2 distribution
+//    double s=tup->GetMinimum("s");
+//    double Mcc=3.1;
+//    double pT2max=pow(s-Mcc*Mcc,2)/s/4;
+//    TH1D *hPT2=new TH1D("hPT2","hPT2",16,0,pT2max); hPT2->Sumw2();
+//    for(int i=1; i<=hMatr[0]->GetNbinsX(); ++i) {
+//        cosPsi=hMatr[1]->GetBinCenter(i);
+//        double pT2=(1-cosPsi*cosPsi)*pT2max;
+//        cout<<cosPsi<<" "<<pT2<<" "<<hMatr[10]->GetBinContent(i)<<endl;
+//        for(int iM=0; iM<nMatr; ++iM) {
+//            hPT2->Fill(pT2,pow(hMatr[iM]->GetBinContent(i),2));
+//        }
+//    };
+//    saveHST(hPT2,"hPT2.hist",true);
 }
