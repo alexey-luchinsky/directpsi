@@ -1,0 +1,7 @@
+build/
+nbproject/
+bak/
+C.tar
+
+syntax: glob
+*.orig
