@@ -27,6 +27,10 @@ string i_to_string(int v) {
   return string(c);
 }
 
+double wave_function(double q2, double delta) {
+    const double PI=acos(-1.);
+    return sqrt(PI)*exp(-q2/delta/delta)/pow(delta,3);
+}
 
 int main(int argc, char **argv) {
     cout<<"Hello, world!"<<endl;
@@ -55,8 +59,9 @@ int main(int argc, char **argv) {
     tup->SetBranchAddress("cosPsi",&cosPsi);
     for(int i=0; i<tup->GetEntries(); ++i) {
         tup->GetEntry(i);
+        double WF=wave_function(q2,0.4);
         for(int iH=0; iH<nMatr; ++iH)
-            hMatr[iH]->Fill(cosPsi,matr[iH]*weight);
+            hMatr[iH]->Fill(cosPsi,matr[iH]*weight*WF);
     }
     for(int iH=0; iH<nMatr; ++iH) {
         hMatr[iH]->Scale(1./tup->GetEntries());
