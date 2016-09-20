@@ -13,33 +13,7 @@ using namespace std;
 #include "ramC/Random.h"
 #include "ramC/rambo2.h"
 
-double calc_matr0(); // 1
-double calc_matr1(); // -1 -1 -> 0 -1
-double calc_matr2(); // -1 -1 -> 1 -1
-double calc_matr3(); // -1 -1 -> 2 -1
-double calc_matr4(); // -1 -1 -> 0 1
-double calc_matr5(); // -1 -1 -> 1 1
-double calc_matr6(); // -1 -1 -> 2 1
-double calc_matr7(); // -1 1 -> 0 -1
-double calc_matr8(); // -1 1 -> 1 -1
-double calc_matr9(); // -1 1 -> 2 -1
-double calc_matr10(); // -1 1 -> 0 1
-double calc_matr11(); // -1 1 -> 1 1
-double calc_matr12(); // -1 1 -> 2 1
-double calc_matr13(); // 1 -1 -> 0 -1
-double calc_matr14(); // 1 -1 -> 1 -1
-double calc_matr15(); // 1 -1 -> 2 -1
-double calc_matr16(); // 1 -1 -> 0 1
-double calc_matr17(); // 1 -1 -> 1 1
-double calc_matr18(); // 1 -1 -> 2 1
-double calc_matr19(); // 1 1 -> 0 -1
-double calc_matr20(); // 1 1 -> 1 -1
-double calc_matr21(); // 1 1 -> 2 -1
-double calc_matr22(); // 1 1 -> 0 1
-double calc_matr23(); // 1 1 -> 1 1
-double calc_matr24(); // 1 1 -> 2 1
-double calc_matr25(); // 1 0 -> 1 1
-
+#include "mtr.h"
 
 rambo2 ramCM;
 EvtVector4R k1, k2, P, k3, q;
@@ -49,16 +23,8 @@ double NG, NJ0, NJ1, NJ2;
 
 const int nMatr = 26;
 double matr[nMatr];
-TH1D *hMatr[nMatr];
 TNtuple *tup;
 
-// psi wave function
-double delta;
-
-double WaveFunction(double Q, double del) {
-    return exp(-pow(Q / del, 2));
-    //return 1;
-};
 
 double gen_event(bool debug) {
     ramCM.next();
@@ -135,8 +101,6 @@ void calc_integrals(double s_, int nEv) {
     
     // clear histograms
     s = s_;
-    for (int i = 0; i < nMatr; ++i)
-        hMatr[i]->Reset();
 
     double ecm = sqrt(s);
     k1.set(ecm / 2, 0, 0, ecm / 2);
@@ -156,23 +120,19 @@ void calc_integrals(double s_, int nEv) {
         fill_matr();
 
         double cosPsi = P.get(3) / P.d3mag();
-        double wave_function = WaveFunction(Q, delta);
 
         for(int i=0; i<nMatr; ++i) {
-            hMatr[i]->Fill(cosPsi,matr[i]*weight);
             values[i]=matr[i];
         };
         values[nMatr+1]=s;
         values[nMatr+2]=cosPsi;
         values[nMatr+3]=weight;
-        values[nMatr+4]=wave_function;
+        values[nMatr+4]=0;
         values[nMatr+5]=Q*Q;
-        values[nMatr+6]=delta;
+        values[nMatr+6]=0;
         tup->Fill(values);
         if (debug) {
             cout<<" weight="<<weight<<endl;
-            cout<<" delta="<<delta<<endl;
-            cout << " WF=" << wave_function << endl;
             cout<<" values[nMatr+2]="<<values[nMatr+2]<<endl;
         };
 
@@ -180,15 +140,6 @@ void calc_integrals(double s_, int nEv) {
 
 }
 
-void saveHST(TH1D *hist, TString name, bool print = false) {
-    if (print) cout << " Saving " << name << endl;
-    FILE *file = fopen(name.Data(), "w");
-    for (int i = 1; i <= hist->GetNbinsX(); ++i) {
-        fprintf(file, "%e %e %e\n", hist->GetBinCenter(i), hist->GetBinContent(i) / hist->GetBinWidth(i), hist->GetBinError(i) / hist->GetBinWidth(i));
-    };
-    if (print) cout << "\t Histogram sum=" << hist->GetSum() << endl;
-    fclose(file);
-};
 
 string f_to_string(double v) {
   char c[20];
@@ -213,20 +164,19 @@ bool file_exists(string name)
 }
 
 int main(int argc, char **argv) {
-    cout<<"calcInts [s=10] [delta=0.4] [n=1e4]"<<endl;
-    s=10.; delta=0.4;
+    cout<<"calcInts [s=10] [n=1e4]"<<endl;
+    s=10.;
     int nEv=1e4;
     if(argc>1) s=atof(argv[1]);
-    if(argc>2) delta=atof(argv[2]);
-    if(argc>3) nEv=atof(argv[3]);
+    if(argc>2) nEv=atof(argv[2]);
 
     
     
-    cout<<" s="<<s<<" delta="<<delta<<" nEv="<<nEv<<endl;
+    cout<<" s="<<s<<" nEv="<<nEv<<endl;
     cout<<" seed="<<ramCM.random_generator->get_seed()<<endl;
     
     
-    string tuple_file_name="matr_"+f_to_string(s)+"_"+f_to_string(delta)+".root";
+    string tuple_file_name="matr_"+f_to_string(s)+".root";
     TFile file(tuple_file_name.c_str(), "RECREATE");
     // create tuple
     string field_names="";      
@@ -243,38 +193,22 @@ int main(int argc, char **argv) {
     tup=new TNtuple("tup","tup",field_names.c_str());
     
     
-    // init histograms
-    for (int i = 0; i < nMatr; ++i) {
-        string name = "hMatr_" + i_to_string(i);
-        hMatr[i] = new TH1D(name.c_str(), name.c_str(), 20, -1, 1);
-        hMatr[i]->Sumw2();
-    }
 
     // initial gluon momenta
 
     Mcc = 3.1;
-    cout<<"s="<<s<<" delta="<<delta<<endl;
-    string data_path="dat/"+f_to_string(s)+"_"+f_to_string(delta)+"/";
+    cout<<"s="<<s<<endl;
+    string data_path="dat/"+f_to_string(s)+"/";
     // check if file exists
 //    if(file_exists(data_path+"hMatr0.hst")) {
 //        cout<<"file exists already, exiting"<<endl;
 //        return 0;
 //    }
-    system(("mkdir -p "+data_path).c_str());
+//    system(("mkdir -p "+data_path).c_str());
     calc_integrals(s, nEv);
 
 
-    // normalize histograms
-//    double int0 = hMatr[0]->Integral();
-    for (int i = 0; i < nMatr; ++i)
-        hMatr[i]->Scale(1. / nEv); // normalize integrals to intQ(1)
     
-    // save histograms
-    for (int i = 0; i < nMatr; ++i) {
-//        hMatr[i]->Write();
-        string fileName=data_path+"hMatr"+i_to_string(i)+".hst";
-        saveHST(hMatr[i],fileName.c_str());
-    };
     tup->Write();
     file.Save();
 
