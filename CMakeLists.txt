@@ -27,13 +27,20 @@ include_directories(./)
 
 # adding sources for calcInts
 file(GLOB_RECURSE calcInt_SOURCES "src/*.c++" "src/*.cpp" "src/*.for" )
-list(REMOVE_ITEM calcInt_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/partonic.c++")
-list(REMOVE_ITEM calcInt_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/matr.c++")
 list(REMOVE_ITEM calcInt_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/export_data.c++")
+list(REMOVE_ITEM calcInt_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/double_export.c++")
 add_executable (calcInts.exe "src/calcInts.c++" ${calcInt_SOURCES})
 target_link_libraries(calcInts.exe ${ROOT_LIBRARIES})
 
 #adding sources for export_data
 file(GLOB_RECURSE export_data_SOURCES "src/export_data.c++" )
+list(REMOVE_ITEM export_data_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/calcInts.c++")
 add_executable (export_data.exe "src/export_data.c++" ${export_data_SOURCES})
 target_link_libraries(export_data.exe ${ROOT_LIBRARIES})
+
+#adding sources for double_export
+file(GLOB_RECURSE double_export_SOURCES "src/double_export.c++" )
+list(REMOVE_ITEM double_export_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/calcInts.c++")
+list(REMOVE_ITEM double_export_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/export_data.c++")
+add_executable (double_export.exe "src/double_export.c++" ${double_export_SOURCES})
+target_link_libraries(double_export.exe ${ROOT_LIBRARIES})
