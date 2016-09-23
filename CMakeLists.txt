@@ -1,3 +1,4 @@
+set(CMAKE_OSX_DEPLOYMENT_TARGET "")
 INCLUDE(SetCompileFlag.cmake)
 
 cmake_minimum_required(VERSION 2.6)
