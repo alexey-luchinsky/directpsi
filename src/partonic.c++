@@ -24,6 +24,7 @@ double wave_function(double q2, double delta) {
 
 const int nMatr = 26;
 TH2D * hMatr[nMatr];
+const double Mcc = 3.1;
 
 void load_integrals(TFile *in_file) {
     TNtuple *tup = (TNtuple*) in_file->Get("tup");
@@ -52,6 +53,33 @@ void load_integrals(TFile *in_file) {
         for (int iH = 0; iH < nMatr; ++iH)
             hMatr[iH]->Fill(cosPsi, s, matr[iH] * weight * WF);
     }
+    for(int iH=0; iH<nMatr; ++iH)
+        hMatr[iH]->Scale(1./hMatr[iH]->GetEntries());
+}
+
+void saveHST(TH1D *hist, TString name, bool print = false) {
+    if (print) cout << " Saving " << name << endl;
+    FILE *file = fopen(name.Data(), "w");
+    for (int i = 1; i <= hist->GetNbinsX(); ++i) {
+        fprintf(file, "%e %e %e\n", hist->GetBinCenter(i), hist->GetBinContent(i) / hist->GetBinWidth(i), hist->GetBinError(i) / hist->GetBinWidth(i));
+    };
+    if (print) cout << "\t Histogram sum=" << hist->GetSum() << endl;
+    fclose(file);
+};
+
+TH1D* genPT(double s) {
+    double pTmax = (s - Mcc * Mcc) / (2 * sqrt(s));
+    cout<<" pTmax="<<pTmax<<endl;
+    int nBin=50;
+    TH1D* hist = new TH1D("cos", "cos", nBin, -1, 1);
+    for(double cs=-1+2./nBin/2; cs<1-2./nBin/2; cs+=.2/nBin) {
+//        double cosPsi=sqrt(1.-pT*pT/pTmax/pTmax);
+//        cout<<"cs="<<cs<<" s="<<s<<endl;
+        for(int iH=1; iH<nMatr; ++iH)
+            hist->Fill(cs, pow(hMatr[iH]->Interpolate(cs, s),2));
+    }
+    
+    return hist;
 }
 
 int main(void) {
@@ -60,11 +88,14 @@ int main(void) {
     cout << "Loading integrals from " << name << endl;
     TFile *in_file = new TFile(name.c_str());
     load_integrals(in_file);
+    
+    TH1D *h=genPT(13.);
+    saveHST(h,"hcs.hst");
 
-    TH2D *h20 = hMatr[20];
-    TAxis *xa = h20->GetXaxis();
-    cout << h20->GetEntries() << " " << xa->GetBinCenter(1) << " " << xa->GetBinCenter(xa->GetNbins()) << endl;
-    cout << h20->Interpolate(.1, 13) << endl;
-    in_file->Close();
+//    TH2D *h20 = hMatr[20];
+//    TAxis *xa = h20->GetXaxis();
+//    cout << h20->GetEntries() << " " << xa->GetBinCenter(1) << " " << xa->GetBinCenter(xa->GetNbins()) << endl;
+//    cout << h20->Interpolate(.1, 13) << endl;
+//    in_file->Close();
     return 0;
 }
