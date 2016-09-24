@@ -14,7 +14,6 @@ using namespace std;
 
 #include "ramC/Random.h"
 #include "ramC/rambo2.h"
-
 #include "mtr.h"
 
 rambo2 ramCM;
@@ -31,6 +30,20 @@ string output_name;
 const int nMatr = 26;
 double matr[nMatr];
 TNtuple *tup;
+
+string f_to_string(double v) {
+    char c[30];
+    sprintf(c, "%f", v);
+    return string(c);
+}
+
+string i_to_string(int v) {
+    char c[30];
+    sprintf(c, "%d", v);
+    return string(c);
+}
+
+
 
 double gen_event(bool debug) {
     ramCM.next();
@@ -147,17 +160,6 @@ void calc_integrals(double s_, int nEv) {
 
 }
 
-string f_to_string(double v) {
-    char c[20];
-    sprintf(c, "%f", v);
-    return string(c);
-}
-
-string i_to_string(int v) {
-    char c[20];
-    sprintf(c, "%d", v);
-    return string(c);
-}
 
 bool file_exists(string name) {
     if (FILE * file = fopen(name.c_str(), "r")) {
