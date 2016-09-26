@@ -14,7 +14,6 @@ using namespace std;
 
 #include "ramC/Random.h"
 #include "ramC/rambo2.h"
-
 #include "mtr.h"
 
 rambo2 ramCM;
@@ -23,9 +22,27 @@ double Mcc, s;
 double T, U, k1q, Q, k2q, qq, mc;
 double NG, NJ0, NJ1, NJ2;
 
+int nEv;
+double sMin, sMax;
+string output_name;
+
+
 const int nMatr = 26;
 double matr[nMatr];
 TNtuple *tup;
+
+string f_to_string(double v) {
+    char c[30];
+    sprintf(c, "%f", v);
+    return string(c);
+}
+
+string i_to_string(int v) {
+    char c[30];
+    sprintf(c, "%d", v);
+    return string(c);
+}
+
 
 
 double gen_event(bool debug) {
@@ -66,9 +83,11 @@ double gen_event(bool debug) {
 }
 
 void fill_matr() {
-    NG=1./sqrt(s*T*U);
-    NJ0=2./sqrt(s*T*U);    NJ1=1./sqrt(s*T*U);    NJ2=1./Mcc;
-    
+    NG = 1. / sqrt(s * T * U);
+    NJ0 = 2. / sqrt(s * T * U);
+    NJ1 = 1. / sqrt(s * T * U);
+    NJ2 = 1. / Mcc;
+
     matr[0] = calc_matr0();
     matr[1] = calc_matr1();
     matr[2] = calc_matr2();
@@ -98,22 +117,22 @@ void fill_matr() {
 }
 
 void calc_integrals(double s_, int nEv) {
-    Float_t values[nMatr+5];
-    
-    // clear histograms
-    s = s_;
+    Float_t values[nMatr + 5];
 
-    double ecm = sqrt(s);
-    k1.set(ecm / 2, 0, 0, ecm / 2);
-    k2.set(ecm / 2, 0, 0, -ecm / 2);
 
-    
+
     // g g -> psi g random space
-    ramCM.setECM(ecm);
     ramCM.setMass(0, Mcc);
     ramCM.setMass(1, 0.);
 
     for (int iEv = 0; iEv < nEv; ++iEv) {
+        s = ramCM.random_generator->rand(sMin, sMax);
+
+        double ecm = sqrt(s);
+        ramCM.setECM(ecm);
+        k1.set(ecm / 2, 0, 0, ecm / 2);
+        k2.set(ecm / 2, 0, 0, -ecm / 2);
+
         bool debug = (iEv < 3);
         if (iEv % (nEv / 10) == 0) cout << iEv << endl;
         if (debug) cout << "--------------- Debug print at iEv=" << iEv << "-------------" << endl;
@@ -122,19 +141,19 @@ void calc_integrals(double s_, int nEv) {
 
         double cosPsi = P.get(3) / P.d3mag();
 
-        for(int i=0; i<nMatr; ++i) {
-            values[i]=matr[i];
+        for (int i = 0; i < nMatr; ++i) {
+            values[i] = matr[i];
         };
-        values[nMatr+1]=s;
-        values[nMatr+2]=cosPsi;
-        values[nMatr+3]=weight;
-//        values[nMatr+4]=0;
-        values[nMatr+4]=Q*Q;
-//        values[nMatr+6]=0;
+        values[nMatr + 1] = s;
+        values[nMatr + 2] = cosPsi;
+        values[nMatr + 3] = weight;
+        //        values[nMatr+4]=0;
+        values[nMatr + 4] = Q*Q;
+        //        values[nMatr+6]=0;
         tup->Fill(values);
         if (debug) {
-            cout<<" weight="<<weight<<endl;
-            cout<<" values[nMatr+2]="<<values[nMatr+2]<<endl;
+            cout << " weight=" << weight << endl;
+            cout << " values[nMatr+2]=" << values[nMatr + 2] << endl;
         };
 
     };
@@ -142,100 +161,88 @@ void calc_integrals(double s_, int nEv) {
 }
 
 
-string f_to_string(double v) {
-  char c[20];
-  sprintf(c,"%f",v);
-  return string(c);
-}
-
-string i_to_string(int v) {
-  char c[20];
-  sprintf(c,"%d",v);
-  return string(c);
-}
-
-bool file_exists(string name)
-{
-    if (FILE * file = fopen(name.c_str(), "r"))
-    {
+bool file_exists(string name) {
+    if (FILE * file = fopen(name.c_str(), "r")) {
         fclose(file);
         return true;
     }
     return false;
 }
 
-int nEv;
-string output_name;
 bool init_commandline_args(int argc, char **argv) {
     try {
-        TCLAP::CmdLine cmd("Calculates integrated over q helicity matrix elements for gg->psi g process",' ',"0.9");
-        TCLAP::ValueArg<float> s_arg("s","s","s",false,10,"float",cmd);
-        TCLAP::ValueArg<int> n_arg("n","n","log_10(nEv)",false,4,"float", cmd);
-        TCLAP::ValueArg<string> out_arg("o","o","name for output root file",false,"matr.root","string",cmd);
-        
+        TCLAP::CmdLine cmd("Calculates integrated over q helicity matrix elements for gg->psi g process", ' ', "0.9");
+        //        TCLAP::ValueArg<float> s_arg("s","s","s",false,10,"float",cmd);
+        TCLAP::ValueArg<int> n_arg("n", "n", "log_10(nEv)", false, 4, "float", cmd);
+        TCLAP::ValueArg<string> out_arg("o", "o", "name for output root file", false, "matr.root", "string", cmd);
+        TCLAP::ValueArg<float> sMin_arg("m", "sMin", "minimum s", false, 10, "float", cmd);
+        TCLAP::ValueArg<float> sMax_arg("M", "sMax", "maximum s", false, 0, "float", cmd);
+
         cmd.parse(argc, argv);
-        s=s_arg.getValue();
-        if(n_arg.getValue()>10) {
-            cout<<" log_10(nEv)="<<n_arg.getValue()<<" is too lagre!"<<endl;
+        sMin = sMin_arg.getValue();
+        sMax = sMax_arg.getValue();
+        if (sMax < sMin) sMax = sMin;
+        if (n_arg.getValue() > 10) {
+            cout << " log_10(nEv)=" << n_arg.getValue() << " is too lagre!" << endl;
             return false;
         };
-        nEv=pow(10,n_arg.getValue());
-        output_name=out_arg.getValue();
+        nEv = pow(10, n_arg.getValue());
+        output_name = out_arg.getValue();
     } catch (TCLAP::ArgException e) {
-        cout<<" error "<<e.error()<<" for arg "<<e.argId()<<endl;
-         return false;
+        cout << " error " << e.error() << " for arg " << e.argId() << endl;
+        return false;
     }
     return true;
 }
 
 int main(int argc, char **argv) {
-    if(!init_commandline_args(argc, argv)) return -1;
-    cout<<" s="<<s<<endl;
-    cout<<" nEv="<<nEv<<endl;
-    cout<<" output_name="<<output_name<<endl;
-//    return 0;
-//    cout<<"calcInts [s=10] [n=1e4]"<<endl;
-//    s=10.;
-//    if(argc>1) s=atof(argv[1]);
-//    if(argc>2) nEv=atof(argv[2]);
+    if (!init_commandline_args(argc, argv)) return -1;
+    cout << " sMin=" << sMin << " sMax=" << sMax << endl;
+    cout << " nEv=" << nEv << endl;
+    cout << " output_name=" << output_name << endl;
+    //    return 0;
+    //    cout<<"calcInts [s=10] [n=1e4]"<<endl;
+    //    s=10.;
+    //    if(argc>1) s=atof(argv[1]);
+    //    if(argc>2) nEv=atof(argv[2]);
 
-    
-    
-    cout<<" s="<<s<<" nEv="<<nEv<<endl;
-    cout<<" seed="<<ramCM.random_generator->get_seed()<<endl;
-    
-    
-//    string tuple_file_name="matr_"+f_to_string(s)+".root";
+
+
+    cout << " s=" << s << " nEv=" << nEv << endl;
+    cout << " seed=" << ramCM.random_generator->get_seed() << endl;
+
+
+    //    string tuple_file_name="matr_"+f_to_string(s)+".root";
     TFile file(output_name.c_str(), "RECREATE");
     // create tuple
-    string field_names="";      
-    for(int i=0; i<=nMatr; ++i) {
-        field_names +="matr_"+i_to_string(i)+":";
+    string field_names = "";
+    for (int i = 0; i <= nMatr; ++i) {
+        field_names += "matr_" + i_to_string(i) + ":";
     };
-    field_names+="s:";
-    field_names+="cosPsi:";
-    field_names+="wt:";
-    field_names+="q2";
-    cout<<field_names<<endl;
-    tup=new TNtuple("tup","tup",field_names.c_str());
-    
-    
+    field_names += "s:";
+    field_names += "cosPsi:";
+    field_names += "wt:";
+    field_names += "q2";
+    cout << field_names << endl;
+    tup = new TNtuple("tup", "tup", field_names.c_str());
+
+
 
     // initial gluon momenta
 
     Mcc = 3.1;
-    cout<<"s="<<s<<endl;
-    string data_path="dat/"+f_to_string(s)+"/";
+    cout << "s=" << s << endl;
+    string data_path = "dat/" + f_to_string(s) + "/";
     // check if file exists
-//    if(file_exists(data_path+"hMatr0.hst")) {
-//        cout<<"file exists already, exiting"<<endl;
-//        return 0;
-//    }
-//    system(("mkdir -p "+data_path).c_str());
+    //    if(file_exists(data_path+"hMatr0.hst")) {
+    //        cout<<"file exists already, exiting"<<endl;
+    //        return 0;
+    //    }
+    //    system(("mkdir -p "+data_path).c_str());
     calc_integrals(s, nEv);
 
 
-    
+
     tup->Write();
     file.Save();
 
