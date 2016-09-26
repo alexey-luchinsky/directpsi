@@ -27,38 +27,15 @@ const int nMatr = 26;
 TH2D * hMatr[nMatr]; // hMatr[nT, s], nT=-(k1-k3)^2/(s-Mcc)^2 in [0,1])
 const double Mcc = 3.1;
 const int nTBin = 50;
-
+TFile *hist_file;
 void load_integrals(TFile *in_file) {
+    hist_file=new TFile("interpolate.root","READ");
     TNtuple *tup = (TNtuple*) in_file->Get("tup");
-
-    double sMin = tup->GetMinimum("s"), sMax = tup->GetMaximum("s");
-    int nEv = tup->GetEntries();
-    cout << " nEv=" << nEv << " sMin=" << sMin << " sMax=" << sMax << endl;
-    float matr[nMatr];
-
-    for (int iH = 0; iH < nMatr; ++iH) {
-        string name = "matr_" + i_to_string(iH);
-        tup->SetBranchAddress(name.c_str(), &matr[iH]);
-        name = "h" + i_to_string(iH);
-        hMatr[iH] = new TH2D(name.c_str(), name.c_str(), nTBin, 0, 1, 10, sMin, sMax);
-        hMatr[iH]->Sumw2();
+    for(int iH=0; iH<nMatr; ++iH) {
+        string name="h"+i_to_string(iH);
+        hMatr[iH]=(TH2D*)hist_file->Get(name.c_str());
+        cout<<" hMatr["<<iH<<"]: "<<hMatr[iH]->GetEntries()<<endl;
     }
-    float weight, wf, cosPsi, q2, s;
-    tup->SetBranchAddress("wt", &weight);
-    tup->SetBranchAddress("cosPsi", &cosPsi);
-    tup->SetBranchAddress("s", &s);
-
-    for (int iEv = 0; iEv < nEv; ++iEv) {
-        tup->GetEntry(iEv);
-        double delta = 0.4;
-        double WF = wave_function(q2, delta);
-        double nT = (1 + cosPsi) / 2;
-        //        if(iEv<10 || nT<0 || nT>1.) cout<<"nT="<<nT<<endl;
-        for (int iH = 0; iH < nMatr; ++iH)
-            hMatr[iH]->Fill(nT, s, matr[iH] * weight * WF);
-    }
-    for (int iH = 0; iH < nMatr; ++iH)
-        hMatr[iH]->Scale(1. / hMatr[iH]->GetEntries());
 }
 
 void saveHST(TH1D *hist, TString name, bool print = false) {
