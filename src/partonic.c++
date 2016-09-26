@@ -2,6 +2,7 @@
 #include "TFile.h"
 #include "TNtuple.h"
 #include "TH2D.h"
+#include "ramC/Random.h"
 
 using namespace std;
 
@@ -23,8 +24,9 @@ double wave_function(double q2, double delta) {
 }
 
 const int nMatr = 26;
-TH2D * hMatr[nMatr];
+TH2D * hMatr[nMatr]; // hMatr[nT, s], nT=-(k1-k3)^2/(s-Mcc)^2 in [0,1])
 const double Mcc = 3.1;
+const int nTBin = 50;
 
 void load_integrals(TFile *in_file) {
     TNtuple *tup = (TNtuple*) in_file->Get("tup");
@@ -38,7 +40,7 @@ void load_integrals(TFile *in_file) {
         string name = "matr_" + i_to_string(iH);
         tup->SetBranchAddress(name.c_str(), &matr[iH]);
         name = "h" + i_to_string(iH);
-        hMatr[iH] = new TH2D(name.c_str(), name.c_str(), 50, -1, 1, 10, sMin, sMax);
+        hMatr[iH] = new TH2D(name.c_str(), name.c_str(), nTBin, 0, 1, 10, sMin, sMax);
         hMatr[iH]->Sumw2();
     }
     float weight, wf, cosPsi, q2, s;
@@ -46,15 +48,17 @@ void load_integrals(TFile *in_file) {
     tup->SetBranchAddress("cosPsi", &cosPsi);
     tup->SetBranchAddress("s", &s);
 
-    for (int i = 0; i < nEv; ++i) {
-        tup->GetEntry(i);
+    for (int iEv = 0; iEv < nEv; ++iEv) {
+        tup->GetEntry(iEv);
         double delta = 0.4;
         double WF = wave_function(q2, delta);
+        double nT = (1 + cosPsi) / 2;
+        //        if(iEv<10 || nT<0 || nT>1.) cout<<"nT="<<nT<<endl;
         for (int iH = 0; iH < nMatr; ++iH)
-            hMatr[iH]->Fill(cosPsi, s, matr[iH] * weight * WF);
+            hMatr[iH]->Fill(nT, s, matr[iH] * weight * WF);
     }
-    for(int iH=0; iH<nMatr; ++iH)
-        hMatr[iH]->Scale(1./hMatr[iH]->GetEntries());
+    for (int iH = 0; iH < nMatr; ++iH)
+        hMatr[iH]->Scale(1. / hMatr[iH]->GetEntries());
 }
 
 void saveHST(TH1D *hist, TString name, bool print = false) {
@@ -69,16 +73,21 @@ void saveHST(TH1D *hist, TString name, bool print = false) {
 
 TH1D* genPT(double s) {
     double pTmax = (s - Mcc * Mcc) / (2 * sqrt(s));
-    cout<<" pTmax="<<pTmax<<endl;
-    int nBin=50;
-    TH1D* hist = new TH1D("cos", "cos", nBin, -1, 1);
-    for(double cs=-1+2./nBin/2; cs<1-2./nBin/2; cs+=.2/nBin) {
-//        double cosPsi=sqrt(1.-pT*pT/pTmax/pTmax);
-//        cout<<"cs="<<cs<<" s="<<s<<endl;
-        for(int iH=1; iH<nMatr; ++iH)
-            hist->Fill(cs, pow(hMatr[iH]->Interpolate(cs, s),2));
+    cout << " pTmax=" << pTmax << endl;
+    int nBin = 20;
+    TH1D* hist = new TH1D("pT2", "pT2", nBin, 0, pTmax * pTmax);
+    Random random_generator;
+    int nEv = 1e5;
+    for (int iEv = 0; iEv < nEv; ++iEv) {
+        double nT = random_generator.rand(0, 1), t = (Mcc * Mcc - s) * nT, u = Mcc * Mcc - s - t,
+                pT2 = t * u / s;
+        if (iEv < 10) cout << nT << " " << t << " " << u << " " << pT2 << " " << pT2 / pTmax / pTmax << endl;
+        for(int iH=1; iH<nMatr; ++iH) {
+            double mtr=hMatr[iH]->Interpolate(nT,s);
+            hist->Fill(pT2,pow(mtr,2));
+        }
     }
-    
+
     return hist;
 }
 
@@ -88,14 +97,14 @@ int main(void) {
     cout << "Loading integrals from " << name << endl;
     TFile *in_file = new TFile(name.c_str());
     load_integrals(in_file);
-    
-    TH1D *h=genPT(13.);
-    saveHST(h,"hcs.hst");
 
-//    TH2D *h20 = hMatr[20];
-//    TAxis *xa = h20->GetXaxis();
-//    cout << h20->GetEntries() << " " << xa->GetBinCenter(1) << " " << xa->GetBinCenter(xa->GetNbins()) << endl;
-//    cout << h20->Interpolate(.1, 13) << endl;
-//    in_file->Close();
+    TH1D *h = genPT(14.9);
+    saveHST(h, "hPt2.hst");
+
+    //    TH2D *h20 = hMatr[20];
+    //    TAxis *xa = h20->GetXaxis();
+    //    cout << h20->GetEntries() << " " << xa->GetBinCenter(1) << " " << xa->GetBinCenter(xa->GetNbins()) << endl;
+    //    cout << h20->Interpolate(.1, 13) << endl;
+    //    in_file->Close();
     return 0;
 }
