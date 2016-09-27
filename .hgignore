@@ -5,3 +5,4 @@ C.tar
 
 syntax: glob
 *.orig
+Makefile
