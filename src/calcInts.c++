@@ -18,7 +18,7 @@ using namespace std;
 
 rambo2 ramCM;
 EvtVector4R k1, k2, P, k3, q;
-double Mcc, s;
+double Mcc=3.1, s;
 double T, U, k1q, Q, k2q, qq, mc;
 double NG, NJ0, NJ1, NJ2;
 
@@ -175,12 +175,12 @@ bool init_commandline_args(int argc, char **argv) {
         //        TCLAP::ValueArg<float> s_arg("s","s","s",false,10,"float",cmd);
         TCLAP::ValueArg<int> n_arg("n", "n", "log_10(nEv)", false, 4, "float", cmd);
         TCLAP::ValueArg<string> out_arg("o", "o", "name for output root file", false, "matr.root", "string", cmd);
-        TCLAP::ValueArg<float> sMin_arg("m", "sMin", "minimum s", false, 10, "float", cmd);
+        TCLAP::ValueArg<float> sMin_arg("m", "sMin", "minimum s", false, -1, "float", cmd);
         TCLAP::ValueArg<float> sMax_arg("M", "sMax", "maximum s", false, 0, "float", cmd);
 
         cmd.parse(argc, argv);
-        sMin = sMin_arg.getValue();
-        sMax = sMax_arg.getValue();
+        sMin = sMin_arg.getValue(); if(sMin<Mcc*Mcc) sMin=Mcc*Mcc;
+        sMax = sMax_arg.getValue(); if(sMax<sMin) sMax=1.1*sMin;
         if (sMax < sMin) sMax = sMin;
         if (n_arg.getValue() > 10) {
             cout << " log_10(nEv)=" << n_arg.getValue() << " is too lagre!" << endl;
@@ -230,7 +230,6 @@ int main(int argc, char **argv) {
 
     // initial gluon momenta
 
-    Mcc = 3.1;
     cout << "s=" << s << endl;
     string data_path = "dat/" + f_to_string(s) + "/";
     // check if file exists
