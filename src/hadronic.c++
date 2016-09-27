@@ -44,10 +44,10 @@ int main(void) {
     
     Random random_generator;
     TFile out_file("PP.root","RECREATE");
-    TNtuple tup("tup","tup","hatS:pT2:nT:mtr2:pdf1:pdf2:wt");
+    TNtuple tup("tup","tup","hatS:pT2:nT:x1:x2:y:mtr2:pdf1:pdf2:wt");
 
     double Mcc = 3.1, Mcc2 = Mcc*Mcc, q2 = Mcc2;
-    double S = 700.;
+    double S = 13.;
     double sMin=hMatr[0]->GetYaxis()->GetBinLowEdge(1);
     if(sMin<Mcc2) {
         cout<<" root file sMin="<<sMin<<" lower than Mcc2="<<Mcc2<<". Setting sMin=Mcc2"<<endl;
@@ -56,17 +56,25 @@ int main(void) {
     double sMax=hMatr[0]->GetYaxis()->GetBinUpEdge(hMatr[0]->GetYaxis()->GetNbins());
     if(sMax>S) {
         cout<<" sMax="<<sMax<<" higher than S="<<S<<" setting sMax=S"<<endl;
+        sMax=S;
     };
+    cout<<"S="<<S<<" sMin="<<sMin<<" sMax="<<sMax<<endl;
     int nEv = 1e6;
     for (int iEv = 0; iEv < nEv; ++iEv) {
+        bool debug=(iEv<0);
+        if(debug) cout<<"----- Debug print at i="<<iEv<<"---------"<<endl;
         double wt = 1;
         double s = random_generator.rand(sMin, sMax);
+        if(debug) cout<<"\t s="<<s<<endl;
+        
         wt *= (sMax - sMin)/S; // hat s
         // y
         double yMax = log(S / s) / 2;
         double y = random_generator.rand(-yMax, yMax);
+        if(debug) cout<<"\t y="<<y<<endl;
         wt *= 2 * yMax; // y
         double x1 = sqrt(s / S) * exp(y), pdf1 = pdf->xfxQ2(0, x1, q2) / x1;
+        if(debug) cout<<"\t x1="<<x1<<" pdf1="<<pdf1<<endl;
         double x2 = sqrt(s / S) * exp(-y), pdf2 = pdf->xfxQ2(0, x2, q2)/ x2;
         
         double nT=random_generator.rand(0,1), t=(Mcc2-s)*nT, u=Mcc2-s-t, 
@@ -79,7 +87,8 @@ int main(void) {
             mtr=hMatr[iH]->Interpolate(nT,s);
             mtr2 += pow(mtr,2);
         };
-        tup.Fill(s,pT2,nT,mtr2,pdf1,pdf2,wt);
+//    TNtuple tup("tup","tup","hatS:pT2:nT:x1:x2:y:mtr2:pdf1:pdf2:wt");
+        tup.Fill(s,pT2,nT,x1,x2,y,mtr2,pdf1,pdf2,wt);
     };
     tup.Write(); out_file.Save();
     return 0;
