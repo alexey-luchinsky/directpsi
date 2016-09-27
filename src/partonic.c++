@@ -28,9 +28,8 @@ TH2D * hMatr[nMatr]; // hMatr[nT, s], nT=-(k1-k3)^2/(s-Mcc)^2 in [0,1])
 const double Mcc = 3.1;
 const int nTBin = 50;
 TFile *hist_file;
-void load_integrals(TFile *in_file) {
+void load_integrals() {
     hist_file=new TFile("interpolate.root","READ");
-    TNtuple *tup = (TNtuple*) in_file->Get("tup");
     for(int iH=0; iH<nMatr; ++iH) {
         string name="h"+i_to_string(iH);
         hMatr[iH]=(TH2D*)hist_file->Get(name.c_str());
@@ -72,8 +71,7 @@ int main(void) {
     cout << "partonic" << endl;
     string name = "matr.root";
     cout << "Loading integrals from " << name << endl;
-    TFile *in_file = new TFile(name.c_str());
-    load_integrals(in_file);
+    load_integrals();
 
     TH1D *h = genPT(14.9);
     saveHST(h, "hPt2.hst");
