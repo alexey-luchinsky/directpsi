@@ -38,13 +38,13 @@ int main(void) {
 
     const int nMatr = 26;
     float matr[nMatr];
-    const int nTBin = 50;
+    const int nTBin = 50, nsBin=100;
     TH2D * hMatr[nMatr];
     for (int iH = 0; iH < nMatr; ++iH) {
         string name = "matr_" + i_to_string(iH);
         tup->SetBranchAddress(name.c_str(), &matr[iH]);
         name = "h" + i_to_string(iH);
-        hMatr[iH] = new TH2D(name.c_str(), name.c_str(), nTBin, 0, 1, 10, sMin, sMax);
+        hMatr[iH] = new TH2D(name.c_str(), name.c_str(), nTBin, 0, 1, nsBin, sMin, sMax);
         hMatr[iH]->Sumw2();
     }
     float weight, wf, cosPsi, q2, s;
