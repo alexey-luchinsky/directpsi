@@ -29,7 +29,7 @@ int nTBin, nsBin;
 
 bool init_command_args(int argc, char **argv) {
     try {
-        TCLAP::CmdLine cmd("Create (nT,s) tables from obtained usin calcInts.exe program data", ' ', "0.9");
+        TCLAP::CmdLine cmd("Create (nT,s) tables from obtained using calcInts.exe program data", ' ', "0.9");
         TCLAP::ValueArg<string> in_agr("i","in","input file name",false,"matr.root","string",cmd);
         TCLAP::ValueArg<string> out_arg("o","out","output file name",false,"interpolation.root","string",cmd);
         TCLAP::ValueArg<int> tb_agr("t","tb","number of t bins",false,50,"int",cmd);
