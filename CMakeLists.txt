@@ -33,6 +33,7 @@ list(REMOVE_ITEM calcInt_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/export_data.c+
 list(REMOVE_ITEM calcInt_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/double_export.c++")
 list(REMOVE_ITEM calcInt_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/partonic.c++")
 list(REMOVE_ITEM calcInt_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/hadronic.c++")
+list(REMOVE_ITEM calcInt_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/check.c++")
 add_executable (calcInts.exe "src/calcInts.c++" ${calcInt_SOURCES})
 target_link_libraries(calcInts.exe ${ROOT_LIBRARIES})
 
@@ -53,3 +54,6 @@ add_executable (hadronic.exe "src/hadronic.c++")
 target_link_libraries(hadronic.exe ${ROOT_LIBRARIES})
 target_link_libraries(hadronic.exe /Users/luchinsky/local/lib/libLHAPDF.a)
 
+#adding sources for hadronic
+add_executable (check.exe "src/check.c++")
+target_link_libraries(check.exe ${ROOT_LIBRARIES})
