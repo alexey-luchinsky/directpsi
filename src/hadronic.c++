@@ -26,6 +26,17 @@ string i_to_string(int v) {
     return string(c);
 }
 
+
+void saveHST(TH1D *hist, TString name, bool print = false) {
+    if (print) cout << " Saving " << name << endl;
+    FILE *file = fopen(name.Data(), "w");
+    for (int i = 1; i <= hist->GetNbinsX(); ++i) {
+        fprintf(file, "%e %e %e\n", hist->GetBinCenter(i), hist->GetBinContent(i) / hist->GetBinWidth(i), hist->GetBinError(i) / hist->GetBinWidth(i));
+    };
+    if (print) cout << "\t Histogram sum=" << hist->GetSum() << endl;
+    fclose(file);
+};
+
 string in_fileName, out_fileName;
 double S;
 int nEv;
@@ -102,6 +113,10 @@ int main(int argc, char **argv) {
         sMax = S;
     };
     cout << "S=" << S << " sMin=" << sMin << " sMax=" << sMax << endl;
+    
+    TH1D *hh=new TH1D("hh","hh",30, sMin, sMax);
+    hh->Sumw2();
+    
     for (int iEv = 0; iEv < nEv; ++iEv) {
         bool debug = (iEv < 0);
         if (debug) cout << "----- Debug print at i=" << iEv << "---------" << endl;
@@ -115,12 +130,14 @@ int main(int argc, char **argv) {
         double y = random_generator.rand(-yMax, yMax);
         if (debug) cout << "\t y=" << y << endl;
         wt *= 2 * yMax; // y
+        
         double x1 = sqrt(s / S) * exp(y), pdf1 = pdf->xfxQ2(0, x1, q2) / x1;
         if (debug) cout << "\t x1=" << x1 << " pdf1=" << pdf1 << endl;
         double x2 = sqrt(s / S) * exp(-y), pdf2 = pdf->xfxQ2(0, x2, q2) / x2;
 
         double nT = random_generator.rand(0, 1), t = (Mcc2 - s) * nT, u = Mcc2 - s - t,
                 pT2 = t * u / s;
+        wt *= (s-Mcc2);
 
         double mtr2 = 0, mtr;
         if (iEv < 10)
@@ -131,8 +148,12 @@ int main(int argc, char **argv) {
         };
         //    TNtuple tup("tup","tup","hatS:pT2:nT:x1:x2:y:mtr2:pdf1:pdf2:wt");
         tup.Fill(s, pT2, nT, x1, x2, y, mtr2, pdf1, pdf2, wt);
+        hh->Fill(s,pdf1*pdf2*wt);
     };
     tup.Write();
     out_file.Save();
+    hh->Scale(1./nEv);
+    saveHST(hh, "dSigmaDs_1.hst");
+    
     return 0;
 }
