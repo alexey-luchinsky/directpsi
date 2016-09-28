@@ -152,7 +152,11 @@ int main(int argc, char **argv) {
         // conversion from matr2 to dsdt
         double PI=acos(-1.);
         wt *= 1./(64*PI*s)*4/s;
-        mtr2 = hMatr[0]->Interpolate(nT,s);
+        int nTbin=hMatr[0]->GetXaxis()->GetNbins(), nsbin=hMatr[0]->GetYaxis()->GetNbins();
+        mtr = hMatr[0]->Interpolate(nT,s)*nTbin*nsbin;
+        mtr2=pow(mtr,2);
+        if(iEv<10)
+            cout<<"mtr2="<<mtr2<<endl;
         hh->Fill(s,pdf1*pdf2*wt);
     };
     tup.Write();

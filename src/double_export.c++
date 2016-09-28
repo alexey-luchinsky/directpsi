@@ -21,7 +21,8 @@ string i_to_string(int v) {
 
 double wave_function(double q2, double delta) {
     const double PI = acos(-1.);
-    return exp(-q2 / delta / delta) * pow(delta, 3) / sqrt(PI);
+    double norm = pow(sqrt(PI)*delta,3);
+    return exp(-q2 / delta / delta) / norm;
 }
 
 string in_fileName, out_fileName;
