@@ -148,6 +148,10 @@ int main(int argc, char **argv) {
         };
         //    TNtuple tup("tup","tup","hatS:pT2:nT:x1:x2:y:mtr2:pdf1:pdf2:wt");
         tup.Fill(s, pT2, nT, x1, x2, y, mtr2, pdf1, pdf2, wt);
+        
+        // conversion from matr2 to dsdt
+        double PI=acos(-1.);
+        wt *= 1./(64*PI*s)*4/s;
         hh->Fill(s,pdf1*pdf2*wt);
     };
     tup.Write();
