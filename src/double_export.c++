@@ -51,6 +51,10 @@ int main(int argc, char **argv) {
         return -1;
 
     TFile in_file(in_fileName.c_str(), "READ");
+    if(!in_file.IsOpen()) {
+        cout<<" Cannot open file "<<in_fileName<<endl;
+        return -1;
+    };
     TNtuple *tup = (TNtuple*) in_file.Get("tup");
     double sMin = tup->GetMinimum("s"), sMax = tup->GetMaximum("s");
     int nEv = tup->GetEntries();

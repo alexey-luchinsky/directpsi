@@ -30,12 +30,14 @@ string in_fileName, out_fileName;
 double S;
 int nEv;
 
-void load_integrals() {
+bool load_integrals() {
     hist_file = new TFile(in_fileName.c_str(), "READ");
+    if(!hist_file->IsOpen()) return false;
     for (int iH = 0; iH < nMatr; ++iH) {
         string name = "h" + i_to_string(iH);
         hMatr[iH] = (TH2D*) hist_file->Get(name.c_str());
     }
+    return true;
 }
 
 bool init_commandline_args(int argc, char **argv) {
@@ -61,21 +63,34 @@ bool init_commandline_args(int argc, char **argv) {
     }
 }
 
+void save_pdf(const LHAPDF::PDF *pdf, double q2) {
+    ofstream pdf_file;
+    pdf_file.open("pdf.txt");
+    double dx=1e-4;
+    for(double x=dx; x<1.-dx; x+=dx) {
+        pdf_file << x << " " << pdf->xfxQ2(0, x, q2) / x<< endl;
+    }
+    pdf_file.close();
+}
+
 int main(int argc, char **argv) {
     init_commandline_args(argc, argv);
     const string setname = "CT10";
     const int imem = 0;
     const PDF *pdf = mkPDF(setname);
 
+    double Mcc = 3.1, Mcc2 = Mcc*Mcc, q2 = Mcc2;
+    save_pdf(pdf, q2);
 
-
-    load_integrals();
+    if(!load_integrals()) {
+        cout<<"Cannot open file "<<in_fileName<<endl;
+        return -1;
+    }
 
     Random random_generator;
     TFile out_file(out_fileName.c_str(), "RECREATE");
     TNtuple tup("tup", "tup", "hatS:pT2:nT:x1:x2:y:mtr2:pdf1:pdf2:wt");
 
-    double Mcc = 3.1, Mcc2 = Mcc*Mcc, q2 = Mcc2;
     double sMin = hMatr[0]->GetYaxis()->GetBinLowEdge(1);
     if (sMin < Mcc2) {
         cout << " root file sMin=" << sMin << " lower than Mcc2=" << Mcc2 << ". Setting sMin=Mcc2" << endl;
