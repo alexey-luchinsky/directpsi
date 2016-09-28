@@ -140,7 +140,7 @@ int main(int argc, char **argv) {
         wt *= (s-Mcc2);
 
         double mtr2 = 0, mtr;
-        if (iEv < 10)
+        if (debug)
             cout << " nT=" << nT << " s=" << s << " wt=" << wt << endl;
         for (int iH = 1; iH < nMatr; ++iH) {
             mtr = hMatr[iH]->Interpolate(nT, s);
@@ -152,6 +152,7 @@ int main(int argc, char **argv) {
         // conversion from matr2 to dsdt
         double PI=acos(-1.);
         wt *= 1./(64*PI*s)*4/s;
+        mtr2 = hMatr[0]->Interpolate(nT,s);
         hh->Fill(s,pdf1*pdf2*wt);
     };
     tup.Write();

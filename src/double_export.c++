@@ -26,6 +26,7 @@ double wave_function(double q2, double delta) {
 
 string in_fileName, out_fileName;
 int nTBin, nsBin;
+double delta;
 
 bool init_command_args(int argc, char **argv) {
     try {
@@ -34,11 +35,14 @@ bool init_command_args(int argc, char **argv) {
         TCLAP::ValueArg<string> out_arg("o","out","output file name",false,"interpolation.root","string",cmd);
         TCLAP::ValueArg<int> tb_agr("t","tb","number of t bins",false,50,"int",cmd);
         TCLAP::ValueArg<int> sb_arg("s","sb","number of s bins",false,100,"int",cmd);
+        TCLAP::ValueArg<float> delta_arg("d","delta","wave function parameter",false,0.4,"float",cmd);
         cmd.parse(argc, argv);
         in_fileName=in_agr.getValue();
         out_fileName=out_arg.getValue();
         nTBin=tb_agr.getValue();
         nsBin=sb_arg.getValue();
+        delta=delta_arg.getValue();
+        
         return true;
     }    catch (TCLAP::ArgException e) {
         cout << " error " << e.error() << " for arg " << e.argId() << endl;
@@ -58,7 +62,7 @@ int main(int argc, char **argv) {
     TNtuple *tup = (TNtuple*) in_file.Get("tup");
     double sMin = tup->GetMinimum("s"), sMax = tup->GetMaximum("s");
     int nEv = tup->GetEntries();
-    cout << " nEv=" << nEv << " sMin=" << sMin << " sMax=" << sMax << endl;
+    cout << " nEv=" << nEv << " sMin=" << sMin << " sMax=" << sMax << " delta="<<delta<<endl;
 
     TFile out_file(out_fileName.c_str(), "RECREATE");
     out_file.cd();
@@ -80,13 +84,11 @@ int main(int argc, char **argv) {
 
     for (int iEv = 0; iEv < nEv; ++iEv) {
         tup->GetEntry(iEv);
-        double delta = 0.4;
         double WF = wave_function(q2, delta);
         double nT = (1 + cosPsi) / 2;
-        //        if(iEv<10 || nT<0 || nT>1.) cout<<"nT="<<nT<<endl;
         for (int iH = 0; iH < nMatr; ++iH)
             hMatr[iH]->Fill(nT, s, matr[iH] * weight * WF);
-    }
+    };
     for (int iH = 0; iH < nMatr; ++iH) {
         hMatr[iH]->Scale(1. / hMatr[iH]->GetEntries());
         hMatr[iH]->Write();
