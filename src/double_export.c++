@@ -2,6 +2,7 @@
 #include "TFile.h"
 #include "TNtuple.h"
 #include "TH2D.h"
+#include "ramC/Random.h"
 #include <tclap/CmdLine.h>
 
 using namespace std;
@@ -54,6 +55,17 @@ bool init_command_args(int argc, char **argv) {
 int main(int argc, char **argv) {
     if(!init_command_args(argc, argv))
         return -1;
+    
+    // determine WF normalization coefficient
+    double sum=0, Mcc=3.1;
+    Random random_generator;
+    for(int i=0; i<1e6; ++i) {
+        double Q=random_generator.rand(0,Mcc/2);
+        double PI=acos(-1.);
+        sum += 4*PI*Q*Q*wave_function(Q*Q,delta)*Mcc/2;
+    };
+    sum=sum/1e6;
+    cout<<" WF normalization : "<<sum<<endl;
 
     TFile in_file(in_fileName.c_str(), "READ");
     if(!in_file.IsOpen()) {

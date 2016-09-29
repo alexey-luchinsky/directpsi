@@ -157,7 +157,7 @@ int main(int argc, char **argv) {
         mtr2=pow(mtr,2);
         if(iEv<10)
             cout<<"mtr2="<<mtr2<<endl;
-        hh->Fill(s,pdf1*pdf2*wt);
+        hh->Fill(s,pdf1*pdf2*mtr2*wt);
     };
     tup.Write();
     out_file.Save();
