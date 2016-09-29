@@ -8,6 +8,8 @@
 #ifndef MTR_H
 #define	MTR_H
 
+#include "utils.h"
+
 double calc_matr0(); // 1
 double calc_matr1(); // -1 -1 -> 0 -1
 double calc_matr2(); // -1 -1 -> 1 -1

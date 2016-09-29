@@ -8,8 +8,6 @@ using namespace std;
 
 
 TH2D * hMatr[nMatr]; // hMatr[nT, s], nT=-(k1-k3)^2/(s-Mcc)^2 in [0,1])
-const double Mcc = 3.1;
-const int nTBin = 50;
 TFile *hist_file;
 void load_integrals() {
     hist_file=new TFile("interpolate.root","READ");

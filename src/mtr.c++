@@ -1,8 +1,10 @@
 
 #include <iostream>
 #include "math.h"
+#include "mtr.h"
+
 using namespace std;
-extern double Mcc, mc, qq, s, T, U, k1q, k2q;
+extern double mc, qq, s, T, U, k1q, k2q;
 extern double NG, NJ0, NJ1, NJ2;
 
 double calc_matr0() { return 1;}

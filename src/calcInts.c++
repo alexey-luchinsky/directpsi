@@ -19,7 +19,7 @@ using namespace std;
 
 rambo2 ramCM;
 EvtVector4R k1, k2, P, k3, q;
-double Mcc=3.1, s;
+double s;
 double T, U, k1q, Q, k2q, qq, mc;
 double NG, NJ0, NJ1, NJ2;
 
@@ -36,18 +36,18 @@ TNtuple *tup;
 
 double gen_event(bool debug) {
     ramCM.next();
-    double wt = 1;
+//    double wt = 1;
     P = *ramCM.getV(0);
     k3 = *ramCM.getV(1);
 
     // throw relative quarks momentum
     Q = ramCM.random_generator->rand(0, Mcc / 2);
-    wt *= pow(Q, 2);
+//    wt *= pow(Q, 2);
     double cosQ = ramCM.random_generator->rand(-1., 1.), sinQ = sqrt(1. - cosQ * cosQ);
-    wt *= 2;
+//    wt *= 2;
     const double PI = acos(-1);
     double phi = ramCM.random_generator->rand(0, 2 * PI);
-    wt *= 2 * PI;
+//    wt *= 2 * PI;
     q.set(0, Q * sinQ * cos(phi), Q * sinQ * sin(phi), Q * cosQ);
     q.applyBoostTo(P);
 
@@ -59,7 +59,7 @@ double gen_event(bool debug) {
 
     // debug print
     if (debug) {
-        cout << "wt=" << wt << endl;
+//        cout << "wt=" << wt << endl;
         cout << " k1=" << k1 << " k2=" << k2 << endl;
         cout << "P=" << P << " Mpsi=" << P.mass() << " k3=" << k3 << endl;
         cout << " s=" << s << " T=" << T << " U=" << U << " s+t+u=" << s - T - U << endl;
@@ -68,7 +68,7 @@ double gen_event(bool debug) {
     };
 
 
-    return wt;
+    return 1.;
 }
 
 void fill_matr() {

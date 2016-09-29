@@ -65,7 +65,6 @@ int main(int argc, char **argv) {
     TFile out_file(out_fileName.c_str(), "RECREATE");
     out_file.cd();
 
-    const int nMatr = 26;
     float matr[nMatr];
     TH2D * hMatr[nMatr];
     for (int iH = 0; iH < nMatr; ++iH) {
@@ -75,20 +74,25 @@ int main(int argc, char **argv) {
         hMatr[iH] = new TH2D(name.c_str(), name.c_str(), nTBin, 0, 1, nsBin, sMin, sMax);
         hMatr[iH]->Sumw2();
     }
+
     float weight, wf, cosPsi, q2, s;
     tup->SetBranchAddress("wt", &weight);
     tup->SetBranchAddress("cosPsi", &cosPsi);
     tup->SetBranchAddress("s", &s);
+    tup->SetBranchAddress("q2",&q2);
 
     for (int iEv = 0; iEv < nEv; ++iEv) {
         tup->GetEntry(iEv);
+        
+        double wt = 4*PI*q2*Mcc/2;   // d^3q = 
         double WF = wave_function(q2, delta);
         double nT = (1 + cosPsi) / 2;
+        if(iEv<10) cout<<"matr0="<<matr[0]<<" q2="<<q2<<" wt="<<wt<<" WF="<<WF<<endl;
         for (int iH = 0; iH < nMatr; ++iH)
-            hMatr[iH]->Fill(nT, s, matr[iH] * weight * WF);
+            hMatr[iH]->Fill(nT, s, matr[iH] * wt * WF);
     };
     for (int iH = 0; iH < nMatr; ++iH) {
-        hMatr[iH]->Scale(1. / hMatr[iH]->GetEntries());
+        hMatr[iH]->Scale(1.*nTBin*nsBin/ hMatr[iH]->GetEntries());
         hMatr[iH]->Write();
     };
     out_file.Save();
