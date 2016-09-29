@@ -38,22 +38,22 @@ add_executable (calcInts.exe "src/calcInts.c++" ${calcInt_SOURCES})
 target_link_libraries(calcInts.exe ${ROOT_LIBRARIES})
 
 #adding sources for export_data
-add_executable (export_data.exe "src/export_data.c++")
+add_executable (export_data.exe "src/export_data.c++" "src/utils.c++")
 target_link_libraries(export_data.exe ${ROOT_LIBRARIES})
 
 #adding sources for double_export
-add_executable (double_export.exe "src/double_export.c++")
+add_executable (double_export.exe "src/double_export.c++" "src/utils.c++")
 target_link_libraries(double_export.exe ${ROOT_LIBRARIES})
 
 #adding sources for partonic
-add_executable (partonic.exe "src/partonic.c++")
+add_executable (partonic.exe "src/partonic.c++" "src/utils.c++")
 target_link_libraries(partonic.exe ${ROOT_LIBRARIES})
 
 #adding sources for hadronic
-add_executable (hadronic.exe "src/hadronic.c++")
+add_executable (hadronic.exe "src/hadronic.c++" "src/utils.c++")
 target_link_libraries(hadronic.exe ${ROOT_LIBRARIES})
 target_link_libraries(hadronic.exe /Users/luchinsky/local/lib/libLHAPDF.a)
 
 #adding sources for hadronic
-add_executable (check.exe "src/check.c++")
+add_executable (check.exe "src/check.c++" "src/utils.c++")
 target_link_libraries(check.exe ${ROOT_LIBRARIES})

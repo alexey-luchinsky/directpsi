@@ -6,36 +6,16 @@
 #include "TNtuple.h"
 #include "TH2D.h"
 #include <tclap/CmdLine.h>
+#include "utils.h"
 
 using namespace std;
 using namespace LHAPDF;
 
-const int nMatr = 26;
 TH2D * hMatr[nMatr]; // hMatr[nT, s], nT=-(k1-k3)^2/(s-Mcc)^2 in [0,1])
 TFile *hist_file;
 
-string f_to_string(double v) {
-    char c[30];
-    sprintf(c, "%f", v);
-    return string(c);
-}
-
-string i_to_string(int v) {
-    char c[30];
-    sprintf(c, "%d", v);
-    return string(c);
-}
 
 
-void saveHST(TH1D *hist, TString name, bool print = false) {
-    if (print) cout << " Saving " << name << endl;
-    FILE *file = fopen(name.Data(), "w");
-    for (int i = 1; i <= hist->GetNbinsX(); ++i) {
-        fprintf(file, "%e %e %e\n", hist->GetBinCenter(i), hist->GetBinContent(i) / hist->GetBinWidth(i), hist->GetBinError(i) / hist->GetBinWidth(i));
-    };
-    if (print) cout << "\t Histogram sum=" << hist->GetSum() << endl;
-    fclose(file);
-};
 
 string in_fileName, out_fileName;
 double S;

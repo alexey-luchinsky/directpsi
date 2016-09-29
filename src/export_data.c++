@@ -3,36 +3,11 @@
 #include "TNtuple.h"
 #include "TH1D.h"
 #include <tclap/CmdLine.h>
-
+#include "utils.h"
 
 using namespace std;
 
-void saveHST(TH1D *hist, TString name, bool print = false) {
-    if (print) cout << " Saving " << name << endl;
-    FILE *file = fopen(name.Data(), "w");
-    for (int i = 1; i <= hist->GetNbinsX(); ++i) {
-        fprintf(file, "%e %e %e\n", hist->GetBinCenter(i), hist->GetBinContent(i) / hist->GetBinWidth(i), hist->GetBinError(i) / hist->GetBinWidth(i));
-    };
-    if (print) cout << "\t Histogram sum=" << hist->GetSum() << endl;
-    fclose(file);
-};
 
-string f_to_string(double v) {
-  char c[20];
-  sprintf(c,"%f",v);
-  return string(c);
-}
-
-string i_to_string(int v) {
-  char c[20];
-  sprintf(c,"%d",v);
-  return string(c);
-}
-
-double wave_function(double q2, double delta) {
-    const double PI=acos(-1.);
-    return exp(-q2/delta/delta)*pow(delta,3)/sqrt(PI);
-}
 
 string in_name;
 string out_name;

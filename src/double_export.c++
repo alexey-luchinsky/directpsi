@@ -4,27 +4,12 @@
 #include "TH2D.h"
 #include "ramC/Random.h"
 #include <tclap/CmdLine.h>
+#include "utils.h"
 
 using namespace std;
 using namespace TCLAP;
 
-string f_to_string(double v) {
-    char c[30];
-    sprintf(c, "%f", v);
-    return string(c);
-}
 
-string i_to_string(int v) {
-    char c[30];
-    sprintf(c, "%d", v);
-    return string(c);
-}
-
-double wave_function(double q2, double delta) {
-    const double PI = acos(-1.);
-    double norm = pow(sqrt(PI)*delta,3);
-    return exp(-q2 / delta / delta) / norm;
-}
 
 string in_fileName, out_fileName;
 int nTBin, nsBin;

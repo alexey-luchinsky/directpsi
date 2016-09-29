@@ -9,6 +9,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include "utils.h"
 
 using namespace std;
 
@@ -27,21 +28,9 @@ double sMin, sMax;
 string output_name;
 
 
-const int nMatr = 26;
 double matr[nMatr];
 TNtuple *tup;
 
-string f_to_string(double v) {
-    char c[30];
-    sprintf(c, "%f", v);
-    return string(c);
-}
-
-string i_to_string(int v) {
-    char c[30];
-    sprintf(c, "%d", v);
-    return string(c);
-}
 
 
 
