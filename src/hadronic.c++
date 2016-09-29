@@ -80,7 +80,7 @@ int main(int argc, char **argv) {
 
     Random random_generator;
     TFile out_file(out_fileName.c_str(), "RECREATE");
-    TNtuple tup("tup", "tup", "hatS:pT2:nT:x1:x2:y:mtr2:pdf1:pdf2:wt");
+    TNtuple tup("tup", "tup", "hatS:pT2:nT:x1:x2:y:mtr2:mtr20:pdf1:pdf2:wt");
 
     double sMin = hMatr[0]->GetYaxis()->GetBinLowEdge(1);
     if (sMin < Mcc2) {
@@ -94,8 +94,8 @@ int main(int argc, char **argv) {
     };
     cout << "S=" << S << " sMin=" << sMin << " sMax=" << sMax << endl;
     
-    TH1D *hh=new TH1D("hh","hh",30, sMin, sMax);
-    hh->Sumw2();
+    TH1D *h0=new TH1D("h0","h0",30, sMin, sMax); h0->Sumw2();
+    TH1D *hAll=new TH1D("hAll","hAll",30, sMin, sMax); hAll->Sumw2();
     
     for (int iEv = 0; iEv < nEv; ++iEv) {
         bool debug = (iEv < 0);
@@ -118,6 +118,8 @@ int main(int argc, char **argv) {
         double nT = random_generator.rand(0, 1), t = (Mcc2 - s) * nT, u = Mcc2 - s - t,
                 pT2 = t * u / s;
         wt *= (s-Mcc2);
+        // conversion to dsdt
+        wt *= 1./(64*PI*s)*4/s;
 
         double mtr2 = 0, mtr;
         if (debug)
@@ -126,23 +128,20 @@ int main(int argc, char **argv) {
             mtr = hMatr[iH]->Interpolate(nT, s);
             mtr2 += pow(mtr, 2);
         };
-        //    TNtuple tup("tup","tup","hatS:pT2:nT:x1:x2:y:mtr2:pdf1:pdf2:wt");
-        tup.Fill(s, pT2, nT, x1, x2, y, mtr2, pdf1, pdf2, wt);
+        double mtr0=hMatr[0]->Interpolate(nT,s), mtr20=pow(mtr0,2);
+        //    TNtuple tup("tup","tup","hatS:pT2:nT:x1:x2:y:mtr2:mtr20:pdf1:pdf2:wt");
+        tup.Fill(s, pT2, nT, x1, x2, y, mtr2, mtr20, pdf1, pdf2, wt);
         
-        // conversion from matr2 to dsdt
-        double PI=acos(-1.);
-        wt *= 1./(64*PI*s)*4/s;
-        int nTbin=hMatr[0]->GetXaxis()->GetNbins(), nsbin=hMatr[0]->GetYaxis()->GetNbins();
-        mtr = hMatr[0]->Interpolate(nT,s)*nTbin*nsbin;
-        mtr2=pow(mtr,2);
-        if(iEv<10)
-            cout<<"mtr2="<<mtr2<<endl;
-        hh->Fill(s,pdf1*pdf2*mtr2*wt);
-    };
+    };   
     tup.Write();
     out_file.Save();
-    hh->Scale(1./nEv);
-    saveHST(hh, "dSigmaDs_1.hst");
+    
+    tup.Project("h0","hatS","mtr20*pdf1*pdf2*wt"); h0->Scale(1./nEv);
+    saveHST(h0, "dSigmaDs_1.hst");
+
+    tup.Project("hAll","hatS","mtr2*pdf1*pdf2*wt"); hAll->Scale(1./nEv);
+    saveHST(hAll, "dSigmaDs_All.hst");
+
     
     return 0;
 }
