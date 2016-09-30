@@ -4,6 +4,7 @@
 #include "TFile.h"
 #include "TNtuple.h"
 #include "TH1F.h"
+#include "TVectorD.h";
 
 #include <tclap/CmdLine.h>
 
@@ -24,7 +25,7 @@ double T, U, k1q, Q, k2q, qq, mc;
 double NG, NJ0, NJ1, NJ2;
 
 int nEv;
-double sMin, sMax;
+double sMin, sMax, alpha;
 string output_name;
 
 
@@ -105,7 +106,7 @@ void fill_matr() {
     matr[25] = calc_matr25();
 }
 
-void calc_integrals(double s_, int nEv) {
+void calc_integrals(int nEv) {
     Float_t values[nMatr + 5];
 
 
@@ -115,7 +116,8 @@ void calc_integrals(double s_, int nEv) {
     ramCM.setMass(1, 0.);
 
     for (int iEv = 0; iEv < nEv; ++iEv) {
-        s = ramCM.random_generator->rand(sMin, sMax);
+        double xs=ramCM.random_generator->rand(0,1);
+        s = sMin+(sMax-sMin)*pow(xs,alpha);
 
         double ecm = sqrt(s);
         ramCM.setECM(ecm);
@@ -133,7 +135,7 @@ void calc_integrals(double s_, int nEv) {
         for (int i = 0; i < nMatr; ++i) {
             values[i] = matr[i];
         };
-        values[nMatr + 1] = s;
+        values[nMatr + 1] = xs;
         values[nMatr + 2] = cosPsi;
         values[nMatr + 3] = weight;
         //        values[nMatr+4]=0;
@@ -166,10 +168,11 @@ bool init_commandline_args(int argc, char **argv) {
         TCLAP::ValueArg<string> out_arg("o", "o", "name for output root file", false, "matr.root", "string", cmd);
         TCLAP::ValueArg<float> sMin_arg("m", "sMin", "minimum s", false, -1, "float", cmd);
         TCLAP::ValueArg<float> sMax_arg("M", "sMax", "maximum s", false, 0, "float", cmd);
-
+        TCLAP::ValueArg<float> alpha_arg("a","alpha","parameter of smart s sampling",false,3,"float",cmd);
         cmd.parse(argc, argv);
         sMin = sMin_arg.getValue(); if(sMin<Mcc*Mcc) sMin=Mcc*Mcc;
         sMax = sMax_arg.getValue(); if(sMax<sMin) sMax=1.1*sMin;
+        alpha = alpha_arg.getValue();
         if (sMax < sMin) sMax = sMin;
         if (n_arg.getValue() > 10) {
             cout << " log_10(nEv)=" << n_arg.getValue() << " is too lagre!" << endl;
@@ -187,28 +190,29 @@ bool init_commandline_args(int argc, char **argv) {
 int main(int argc, char **argv) {
     if (!init_commandline_args(argc, argv)) return -1;
     cout << " sMin=" << sMin << " sMax=" << sMax << endl;
+    cout<<" alpha="<<alpha<<endl;
     cout << " nEv=" << nEv << endl;
     cout << " output_name=" << output_name << endl;
-    //    return 0;
-    //    cout<<"calcInts [s=10] [n=1e4]"<<endl;
-    //    s=10.;
-    //    if(argc>1) s=atof(argv[1]);
-    //    if(argc>2) nEv=atof(argv[2]);
 
 
 
-    cout << " s=" << s << " nEv=" << nEv << endl;
+//    cout << " s=" << s << " nEv=" << nEv << endl;
     cout << " seed=" << ramCM.random_generator->get_seed() << endl;
 
 
     //    string tuple_file_name="matr_"+f_to_string(s)+".root";
     TFile file(output_name.c_str(), "RECREATE");
+    TVectorD stats(3);
+    stats[0]=sMin; stats[1]=sMax; stats[2]=alpha;
+    stats.Write("stats");
+    
+    
     // create tuple
     string field_names = "";
     for (int i = 0; i <= nMatr; ++i) {
         field_names += "matr_" + i_to_string(i) + ":";
     };
-    field_names += "s:";
+    field_names += "xs:";
     field_names += "cosPsi:";
     field_names += "wt:";
     field_names += "q2";
@@ -217,17 +221,7 @@ int main(int argc, char **argv) {
 
 
 
-    // initial gluon momenta
-
-    cout << "s=" << s << endl;
-    string data_path = "dat/" + f_to_string(s) + "/";
-    // check if file exists
-    //    if(file_exists(data_path+"hMatr0.hst")) {
-    //        cout<<"file exists already, exiting"<<endl;
-    //        return 0;
-    //    }
-    //    system(("mkdir -p "+data_path).c_str());
-    calc_integrals(s, nEv);
+    calc_integrals(nEv);
 
 
 
