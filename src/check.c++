@@ -1,35 +1,33 @@
 #include <iostream>
 #include "TH2D.h"
 #include "src/ramC/Random.h"
+#include "utils.h"
+#include "TH1D.h"
+#include "TFile.h"
 using namespace std;
 
-double f(double x, double y) {
-    return 1/exp(x) + y*y;
-}
+double sMin=Mcc*Mcc, sMax=100;
+double alpha=3;
 
-double xMin = -2, xMax = 2, yMin = 0, yMax = 1;
-int nbx = 30, nby = 20;
-TH2D *h;
-
-void check() {
-    Random r(0);
-    h->Reset();
-    int nEv = 1e7;
-    for (int i = 0; i < nEv; ++i) {
-        double x = r.rand(xMin, xMax), y = r.rand(yMin, yMax);
-        h->Fill(x, y, f(x, y));
-    }
-    h->Scale(1. / nEv);
-
-    //    double wx=h->GetXaxis()->GetBinWidth(1), wy=h->GetYaxis()->GetBinWidth(1);
-    //    cout<<" wx="<<wx<<" wy="<<wy<<endl;
-    double x0 = r.rand(xMin, xMax), y0 = r.rand(yMin, yMax);
-    cout << h->Interpolate(x0, y0) * nbx * nby / f(x0, y0) << endl;
+double f(double s) {
+    return 1/s;
 }
 
 int main(void) {
-    h = new TH2D("h", "h", nbx, xMin, xMax, nby, yMin, yMax);
-    for (int i = 0; i < 10; ++i)
-        check();
+    TH1D *h=new TH1D("h","h",10,sMin,sMax); h->Sumw2();
+    int nEv=1e6;
+    Random r;
+    for(int iEv=0; iEv<nEv; ++iEv) {
+        double x=r.rand(0,1);
+        double s=sMin+(sMax-sMin)*pow(x,alpha);
+        double wt=alpha*(sMax-sMin)*pow(x,alpha-1);
+        if(iEv<10)
+            cout<<" x="<<x<<" s="<<s<<" wt="<<wt<<endl;
+        h->Fill(s,f(s)*wt);
+    };
+    h->Scale(1./nEv);
+    saveHST(h,"h.hst",true);
+    
+    
     return 0;
 }

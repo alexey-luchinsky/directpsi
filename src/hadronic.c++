@@ -146,7 +146,7 @@ int main(int argc, char **argv) {
     saveHST(h0, ("dSigmaDs_"+f_to_string(S)+"_"+f_to_string(delta)+"_1.hst").c_str());
 
     tup.Project("hAll","hatS","mtr2*pdf1*pdf2*wt"); hAll->Scale(1./nEv);
-    saveHST(hAll, ("dSigmaDs_"+f_to_string(S)+"_"+f_to_string(delta)+"_All.hst").c_str());
+    saveHST(hAll, ("dSigmaDs"+f_to_string(S)+"_"+f_to_string(delta)+"_All.hst").c_str());
 
     
     return 0;
