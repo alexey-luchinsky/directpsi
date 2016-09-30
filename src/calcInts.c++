@@ -4,7 +4,7 @@
 #include "TFile.h"
 #include "TNtuple.h"
 #include "TH1F.h"
-#include "TVectorD.h";
+#include "TVectorD.h"
 
 #include <tclap/CmdLine.h>
 

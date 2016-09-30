@@ -20,17 +20,21 @@ TFile *hist_file;
 
 string in_fileName, out_fileName;
 double delta, S;
+double sMin, sMax, alpha;
 int nEv;
 
 bool load_integrals() {
     hist_file = new TFile(in_fileName.c_str(), "READ");
     if(!hist_file->IsOpen()) return false;
+    
+    // read statistics
+    TVectorD stats=*((TVectorD*)hist_file->Get("stats"));
+    sMin=stats(0); sMax=stats(1); alpha=stats(2); delta=stats(3);
+    
     for (int iH = 0; iH < nMatr; ++iH) {
         string name = "h" + i_to_string(iH);
         hMatr[iH] = (TH2D*) hist_file->Get(name.c_str());
     }
-    TVectorD *delta_vector = (TVectorD*)hist_file->Get("delta");
-    delta=(*delta_vector)(0);
 
     return true;
 }
@@ -81,24 +85,26 @@ int main(int argc, char **argv) {
         cout<<"Cannot open file "<<in_fileName<<endl;
         return -1;
     }
+    cout<<" sMin="<<sMin<<" sMax="<<sMax<<" alpha="<<alpha<<" delta="<<delta<<endl;
 
     
     Random random_generator;
     TFile out_file(out_fileName.c_str(), "RECREATE");
     TNtuple tup("tup", "tup", "hatS:pT2:nT:x1:x2:y:mtr2:mtr20:pdf1:pdf2:wt");
 
-    double sMin = hMatr[0]->GetYaxis()->GetBinLowEdge(1);
+//    double sMin = hMatr[0]->GetYaxis()->GetBinLowEdge(1);
     if (sMin < Mcc2) {
         cout << " root file sMin=" << sMin << " lower than Mcc2=" << Mcc2 << ". Setting sMin=Mcc2" << endl;
         sMin = Mcc2;
     };
-    double sMax = hMatr[0]->GetYaxis()->GetBinUpEdge(hMatr[0]->GetYaxis()->GetNbins());
+//    double sMax = hMatr[0]->GetYaxis()->GetBinUpEdge(hMatr[0]->GetYaxis()->GetNbins());
     if (sMax > S) {
         cout << " sMax=" << sMax << " higher than S=" << S << " setting sMax=S" << endl;
         sMax = S;
     };
     cout << "S=" << S << " sMin=" << sMin << " sMax=" << sMax << endl;
     cout<<"delta="<<delta<<endl;
+    cout<<" alpha="<<alpha<<endl;
     
     TH1D *h0=new TH1D("h0","h0",30, sMin, sMax); h0->Sumw2();
     TH1D *hAll=new TH1D("hAll","hAll",30, sMin, sMax); hAll->Sumw2();
@@ -107,10 +113,11 @@ int main(int argc, char **argv) {
         bool debug = (iEv < 0);
         if (debug) cout << "----- Debug print at i=" << iEv << "---------" << endl;
         double wt = 1;
-        double s = random_generator.rand(sMin, sMax);
+        double xs = random_generator.rand(0, 1);
+        double s=sMin+(sMax-sMin)*pow(xs,alpha);
+        wt *=alpha*(sMax-sMin)*pow(xs,alpha-1)/S;
         if (debug) cout << "\t s=" << s << endl;
 
-        wt *= (sMax - sMin) / S; // hat s
         // y
         double yMax = log(S / s) / 2;
         double y = random_generator.rand(-yMax, yMax);
@@ -131,10 +138,10 @@ int main(int argc, char **argv) {
         if (debug)
             cout << " nT=" << nT << " s=" << s << " wt=" << wt << endl;
         for (int iH = 1; iH < nMatr; ++iH) {
-            mtr = hMatr[iH]->Interpolate(nT, s);
+            mtr = hMatr[iH]->Interpolate(nT, xs);
             mtr2 += pow(mtr, 2);
         };
-        double mtr0=hMatr[0]->Interpolate(nT,s), mtr20=pow(mtr0,2);
+        double mtr0=hMatr[0]->Interpolate(nT,xs), mtr20=pow(mtr0,2);
         //    TNtuple tup("tup","tup","hatS:pT2:nT:x1:x2:y:mtr2:mtr20:pdf1:pdf2:wt");
         tup.Fill(s, pT2, nT, x1, x2, y, mtr2, mtr20, pdf1, pdf2, wt);
         
@@ -146,7 +153,7 @@ int main(int argc, char **argv) {
     saveHST(h0, ("dSigmaDs_"+f_to_string(S)+"_"+f_to_string(delta)+"_1.hst").c_str());
 
     tup.Project("hAll","hatS","mtr2*pdf1*pdf2*wt"); hAll->Scale(1./nEv);
-    saveHST(hAll, ("dSigmaDs"+f_to_string(S)+"_"+f_to_string(delta)+"_All.hst").c_str());
+    saveHST(hAll, ("dSigmaDs_"+f_to_string(S)+"_"+f_to_string(delta)+"_All.hst").c_str());
 
     
     return 0;
