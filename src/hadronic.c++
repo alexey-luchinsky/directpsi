@@ -5,6 +5,7 @@
 #include "TFile.h"
 #include "TNtuple.h"
 #include "TH2D.h"
+#include "TVectorD.h"
 #include <tclap/CmdLine.h>
 #include "utils.h"
 
@@ -18,7 +19,7 @@ TFile *hist_file;
 
 
 string in_fileName, out_fileName;
-double S;
+double delta, S;
 int nEv;
 
 bool load_integrals() {
@@ -28,6 +29,9 @@ bool load_integrals() {
         string name = "h" + i_to_string(iH);
         hMatr[iH] = (TH2D*) hist_file->Get(name.c_str());
     }
+    TVectorD *delta_vector = (TVectorD*)hist_file->Get("delta");
+    delta=(*delta_vector)(0);
+
     return true;
 }
 
@@ -78,6 +82,7 @@ int main(int argc, char **argv) {
         return -1;
     }
 
+    
     Random random_generator;
     TFile out_file(out_fileName.c_str(), "RECREATE");
     TNtuple tup("tup", "tup", "hatS:pT2:nT:x1:x2:y:mtr2:mtr20:pdf1:pdf2:wt");
@@ -93,6 +98,7 @@ int main(int argc, char **argv) {
         sMax = S;
     };
     cout << "S=" << S << " sMin=" << sMin << " sMax=" << sMax << endl;
+    cout<<"delta="<<delta<<endl;
     
     TH1D *h0=new TH1D("h0","h0",30, sMin, sMax); h0->Sumw2();
     TH1D *hAll=new TH1D("hAll","hAll",30, sMin, sMax); hAll->Sumw2();
@@ -137,10 +143,10 @@ int main(int argc, char **argv) {
     out_file.Save();
     
     tup.Project("h0","hatS","mtr20*pdf1*pdf2*wt"); h0->Scale(1./nEv);
-    saveHST(h0, "dSigmaDs_1.hst");
+    saveHST(h0, ("dSigmaDs_"+f_to_string(S)+"_"+f_to_string(delta)+"_1.hst").c_str());
 
     tup.Project("hAll","hatS","mtr2*pdf1*pdf2*wt"); hAll->Scale(1./nEv);
-    saveHST(hAll, "dSigmaDs_All.hst");
+    saveHST(hAll, ("dSigmaDs_"+f_to_string(S)+"_"+f_to_string(delta)+"_All.hst").c_str());
 
     
     return 0;

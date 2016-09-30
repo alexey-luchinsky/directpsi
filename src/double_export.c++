@@ -2,6 +2,7 @@
 #include "TFile.h"
 #include "TNtuple.h"
 #include "TH2D.h"
+#include "TVectorD.h"
 #include "ramC/Random.h"
 #include <tclap/CmdLine.h>
 #include "utils.h"
@@ -63,7 +64,10 @@ int main(int argc, char **argv) {
     cout << " nEv=" << nEv << " sMin=" << sMin << " sMax=" << sMax << " delta="<<delta<<endl;
 
     TFile out_file(out_fileName.c_str(), "RECREATE");
+    
     out_file.cd();
+    TVectorD dd(1);
+    dd[0]=delta;
 
     float matr[nMatr];
     TH2D * hMatr[nMatr];
@@ -95,6 +99,7 @@ int main(int argc, char **argv) {
         hMatr[iH]->Scale(1.*nTBin*nsBin/ hMatr[iH]->GetEntries());
         hMatr[iH]->Write();
     };
+    dd.Write("delta");
     out_file.Save();
 
     return 0;
