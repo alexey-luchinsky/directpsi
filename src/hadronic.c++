@@ -12,7 +12,7 @@
 using namespace std;
 using namespace LHAPDF;
 
-TH2D * hMatr[nMatr]; // hMatr[nT, s], nT=-(k1-k3)^2/(s-Mcc)^2 in [0,1])
+TH2D * hMatr[nMatr]; // hMatr[nT, xs], nT=-(k1-k3)^2/(s-Mcc)^2 in [0,1])
 TFile *hist_file;
 
 
@@ -107,7 +107,7 @@ int main(int argc, char **argv) {
     cout<<" alpha="<<alpha<<endl;
     
     TH1D *h0=new TH1D("h0","h0",30, sMin, sMax); h0->Sumw2();
-    TH1D *hAll=new TH1D("hAll","hAll",30, sMin, sMax); hAll->Sumw2();
+    TH1D *hAll=new TH1D("hAll","hAll",30, sqrt(sMin), sqrt(sMax)); hAll->Sumw2();
     
     for (int iEv = 0; iEv < nEv; ++iEv) {
         bool debug = (iEv < 0);
@@ -152,7 +152,7 @@ int main(int argc, char **argv) {
     tup.Project("h0","hatS","mtr20*pdf1*pdf2*wt"); h0->Scale(1./nEv);
     saveHST(h0, ("dSigmaDs_"+f_to_string(S)+"_"+f_to_string(delta)+"_1.hst").c_str());
 
-    tup.Project("hAll","hatS","mtr2*pdf1*pdf2*wt"); hAll->Scale(1./nEv);
+    tup.Project("hAll","sqrt(hatS)","mtr2*pdf1*pdf2*wt"); hAll->Scale(1./nEv);
     saveHST(hAll, ("dSigmaDs_"+f_to_string(S)+"_"+f_to_string(delta)+"_All.hst").c_str());
 
     
