@@ -1,6 +1,7 @@
 MESSAGE("Hello, world")
 IF(DEFINED APPLE)
     MESSAGE("APPLE")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 ENDIF(DEFINED APPLE)
 
 set(CMAKE_OSX_DEPLOYMENT_TARGET "")
@@ -15,6 +16,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 
 ## include CERN ROOT
 include(FindROOT.cmake)
+MESSAGE(${ROOT_LIBRARIES})
 
 
 ## set fortran flags
@@ -29,7 +31,7 @@ include_directories(~/local/include)
 include_directories(src)
 include_directories(${ROOT_INCLUDE_DIR})
 include_directories(/usr/local/Cellar/boost/1.58.0/include/)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+
 include_directories(./)
 
 # adding sources for calcInts
@@ -55,9 +57,16 @@ add_executable (partonic.exe "src/partonic.c++" "src/utils.c++")
 target_link_libraries(partonic.exe ${ROOT_LIBRARIES})
 
 #adding sources for hadronic
+## search for LHAPDF libs
+EXEC_PROGRAM(lhapdf-config
+    ARGS "--libs"
+    OUTPUT_VARIABLE LHAPDF_LIBS
+)
+MESSAGE("LHAPDF_LIBS" ${LHAPDF_LIBS})
+
 add_executable (hadronic.exe "src/hadronic.c++" "src/utils.c++")
 target_link_libraries(hadronic.exe ${ROOT_LIBRARIES})
-target_link_libraries(hadronic.exe /Users/luchinsky/local/lib/libLHAPDF.a)
+target_link_libraries(hadronic.exe ${LHAPDF_LIBS})
 
 #adding sources for hadronic
 add_executable (check.exe "src/check.c++" "src/utils.c++")
