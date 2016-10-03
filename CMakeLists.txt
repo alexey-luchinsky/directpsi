@@ -42,6 +42,7 @@ list(REMOVE_ITEM calcInt_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/partonic.c++")
 list(REMOVE_ITEM calcInt_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/hadronic.c++")
 list(REMOVE_ITEM calcInt_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/check.c++")
 list(REMOVE_ITEM calcInt_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/delta.c++")
+list(REMOVE_ITEM calcInt_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/mtr0.c++")
 add_executable (calcInts.exe "src/calcInts.c++" ${calcInt_SOURCES})
 target_link_libraries(calcInts.exe ${ROOT_LIBRARIES})
 
