@@ -3,7 +3,7 @@
 #include "TFile.h"
 #include "ramC/rambo2.h"
 #include <tclap/CmdLine.h>
-
+#include "TVectorD.h"
 using namespace std;
 
 rambo2 ramCM;
@@ -110,8 +110,16 @@ bool init_commandline_args(int argc, char **argv) {
 int main(int argc, char **argv) {
     cout << "delta" << endl;
     if (!init_commandline_args(argc, argv)) return -1;
+    cout<<" sMin="<<sMin<<" sMax="<<sMax<<" alpha="<<alpha<<" nEv="<<nEv<<endl;
 
     TFile out_file(output_name.c_str(), "RECREATE");
+    TVectorD dd(4);
+    dd[0] = sMin;
+    dd[1] = sMax;
+    dd[2] = alpha;
+    dd[3] = 0;
+    dd.Write("stats");
+    
     // init histograms
     for (int iH = 0; iH < nMatr; ++iH) {
         string name = "matr_" + i_to_string(iH);
