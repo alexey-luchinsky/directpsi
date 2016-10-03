@@ -2,6 +2,8 @@
 #include "mtr0.h"
 #include "TFile.h"
 #include "ramC/rambo2.h"
+#include <tclap/CmdLine.h>
+
 using namespace std;
 
 rambo2 ramCM;
@@ -66,10 +68,50 @@ void fill_matr() {
 
 };
 
-int main(void) {
+double sMin, sMax, alpha;
+int nEv;
+string output_name;
+int nTBin = 10, nsBin = 10;
+
+bool init_commandline_args(int argc, char **argv) {
+    try {
+        TCLAP::CmdLine cmd("Calculates  matrix elements for gg->psi g process in delta approximation", ' ', "0.9");
+        //        TCLAP::ValueArg<float> s_arg("s","s","s",false,10,"float",cmd);
+        TCLAP::ValueArg<int> n_arg("n", "n", "log_10(nEv)", false, 4, "float", cmd);
+        TCLAP::ValueArg<string> out_arg("o", "o", "name for output root file", false, "matr0.root", "string", cmd);
+        TCLAP::ValueArg<float> sMin_arg("m", "sMin", "minimum s", false, -1, "float", cmd);
+        TCLAP::ValueArg<float> sMax_arg("M", "sMax", "maximum s", false, 0, "float", cmd);
+        TCLAP::ValueArg<float> alpha_arg("a", "alpha", "parameter of smart s sampling", false, 3, "float", cmd);
+        TCLAP::ValueArg<int> tb_agr("t", "tb", "number of t bins", false, 50, "int", cmd);
+        TCLAP::ValueArg<int> sb_arg("s", "sb", "number of s bins", false, 100, "int", cmd);
+
+        cmd.parse(argc, argv);
+        sMin = sMin_arg.getValue();
+        if (sMin < Mcc * Mcc) sMin = Mcc * Mcc;
+        sMax = sMax_arg.getValue();
+        if (sMax < sMin) sMax = 1.1 * sMin;
+        alpha = alpha_arg.getValue();
+        nTBin = tb_agr.getValue();
+        nsBin = sb_arg.getValue();
+        if (sMax < sMin) sMax = sMin;
+        if (n_arg.getValue() > 10) {
+            cout << " log_10(nEv)=" << n_arg.getValue() << " is too lagre!" << endl;
+            return false;
+        };
+        nEv = pow(10, n_arg.getValue());
+        output_name = out_arg.getValue();
+    } catch (TCLAP::ArgException e) {
+        cout << " error " << e.error() << " for arg " << e.argId() << endl;
+        return false;
+    }
+    return true;
+}
+
+int main(int argc, char **argv) {
     cout << "delta" << endl;
-    int nTBin = 10, nsBin = 10;
-    TFile out_file("matr0.root", "RECREATE");
+    if (!init_commandline_args(argc, argv)) return -1;
+
+    TFile out_file(output_name.c_str(), "RECREATE");
     // init histograms
     for (int iH = 0; iH < nMatr; ++iH) {
         string name = "matr_" + i_to_string(iH);
@@ -81,8 +123,7 @@ int main(void) {
 
     ramCM.setMass(0, Mcc);
     ramCM.setMass(1, 0.);
-    int nEv = 1e7;
-    double sMin = 9.62, sMax = 20, alpha = 3;
+
     for (int iEv = 0; iEv < nEv; ++iEv) {
         double xs = ramCM.random_generator->rand(0, 1);
         s = sMin + (sMax - sMin) * pow(xs, alpha);
@@ -94,15 +135,15 @@ int main(void) {
         if (iEv % (nEv / 10) == 0) cout << iEv << endl;
         if (debug) cout << "--------------- Debug print at iEv=" << iEv << "-------------" << endl;
         double weight = gen_event(debug);
-        double nT=T/(s-Mcc*Mcc);
+        double nT = T / (s - Mcc * Mcc);
         fill_matr();
         for (int iH = 0; iH < nMatr; ++iH)
             hMatr[iH]->Fill(nT, xs, matr[iH]);
-    
-    
+
+
     };
-    
-    
+
+
     for (int iH = 0; iH < nMatr; ++iH) {
         hMatr[iH]->Scale(1. * nTBin * nsBin / hMatr[iH]->GetEntries());
         hMatr[iH]->Write();
