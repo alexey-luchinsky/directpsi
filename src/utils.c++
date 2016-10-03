@@ -16,7 +16,12 @@ void saveHST(TH1D *hist, TString name, bool print) {
     if (print) cout << " Saving " << name << endl;
     FILE *file = fopen(name.Data(), "w");
     for (int i = 1; i <= hist->GetNbinsX(); ++i) {
-        fprintf(file, "%e %e %e\n", hist->GetBinCenter(i), hist->GetBinContent(i) / hist->GetBinWidth(i), hist->GetBinError(i) / hist->GetBinWidth(i));
+        fprintf(file, "%e %e %e %e\n", 
+                hist->GetBinCenter(i), 
+                hist->GetBinWidth(i)/2,
+                hist->GetBinContent(i) / hist->GetBinWidth(i), 
+                hist->GetBinError(i) / hist->GetBinWidth(i)
+                );
     };
     if (print) cout << "\t Histogram sum=" << hist->GetSum() << endl;
     fclose(file);
