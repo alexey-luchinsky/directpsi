@@ -41,6 +41,7 @@ list(REMOVE_ITEM calcInt_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/double_export.
 list(REMOVE_ITEM calcInt_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/partonic.c++")
 list(REMOVE_ITEM calcInt_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/hadronic.c++")
 list(REMOVE_ITEM calcInt_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/check.c++")
+list(REMOVE_ITEM calcInt_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/delta.c++")
 add_executable (calcInts.exe "src/calcInts.c++" ${calcInt_SOURCES})
 target_link_libraries(calcInts.exe ${ROOT_LIBRARIES})
 
@@ -71,3 +72,15 @@ target_link_libraries(hadronic.exe ${LHAPDF_LIBS})
 #adding sources for hadronic
 add_executable (check.exe "src/check.c++" "src/utils.c++")
 target_link_libraries(check.exe ${ROOT_LIBRARIES})
+
+# adding sources for delta
+file(GLOB_RECURSE delta_SOURCES "src/*.c++" "src/*.cpp" "src/*.for" )
+list(REMOVE_ITEM delta_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/export_data.c++")
+list(REMOVE_ITEM delta_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/double_export.c++")
+list(REMOVE_ITEM delta_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/partonic.c++")
+list(REMOVE_ITEM delta_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/hadronic.c++")
+list(REMOVE_ITEM delta_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/check.c++")
+list(REMOVE_ITEM delta_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/calcInts.c++")
+list(REMOVE_ITEM delta_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/mtr.c++")
+add_executable (delta.exe "src/delta.c++" ${delta_SOURCES})
+target_link_libraries(delta.exe ${ROOT_LIBRARIES})
