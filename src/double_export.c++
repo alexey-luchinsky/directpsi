@@ -42,16 +42,22 @@ int main(int argc, char **argv) {
     if (!init_command_args(argc, argv))
         return -1;
 
-    // determine WF normalization coefficient
-    double sum = 0, Mcc = 3.1;
+    // determine normalization coefficient
+    double sum = 0;
     Random random_generator;
     for (int i = 0; i < 1e6; ++i) {
         double Q = random_generator.rand(0, Mcc / 2);
         double PI = acos(-1.);
-        sum += 4 * PI * Q * Q * wave_function(Q*Q, delta) * Mcc / 2;
+        double mc = sqrt(Mcc * Mcc / 4 - Q * Q);
+        double mtr = (Q * Q + 3 * pow(Mcc + 2 * mc, 2)) / (Mcc + 2 * mc) / pow(mc, 3. / 2);
+        sum += 4 * PI * Q * Q * wave_function(Q*Q, delta) * mtr * Mcc / 2;
     };
+    double Gee = 92.9e-6 * 5.791e-2;
+    double ec = 2. / 3;
+    double alphaQED = 1. / 137;
     sum = sum / 1e6;
-    cout << " WF normalization : " << sum << endl;
+    double norm = sqrt(12*PI*Gee/Mcc)/(4*PI*alphaQED*ec*sum/Mcc);
+    cout << " normalization coefficient : " << norm << endl;
 
     TFile in_file(in_fileName.c_str(), "READ");
     if (!in_file.IsOpen()) {
@@ -99,8 +105,10 @@ int main(int argc, char **argv) {
         double WF = wave_function(q2, delta);
         double nT = (1 + cosPsi) / 2;
         if (iEv < 10) cout << "matr0=" << matr[0] << " q2=" << q2 << " wt=" << wt << " WF=" << WF << " nT=" << nT << " xs=" << xs << endl;
-        for (int iH = 0; iH < nMatr; ++iH)
+        for (int iH = 0; iH < nMatr; ++iH) {
+            if(iH>0) matr[iH] *= norm;
             hMatr[iH]->Fill(nT, xs, matr[iH] * wt * WF);
+        };
     };
     for (int iH = 0; iH < nMatr; ++iH) {
         hMatr[iH]->Scale(1. * nTBin * nsBin / hMatr[iH]->GetEntries());

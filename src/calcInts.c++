@@ -133,6 +133,7 @@ void calc_integrals(int nEv) {
         double cosPsi = P.get(3) / P.d3mag();
 
         for (int i = 0; i < nMatr; ++i) {
+            if(i>0) matr[i] = matr[i]/(Mcc+2*mc)/pow(mc,3./2);
             values[i] = matr[i];
         };
         values[nMatr + 1] = xs;
