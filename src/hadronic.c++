@@ -94,7 +94,7 @@ int main(int argc, char **argv) {
 
     Random random_generator;
     TFile out_file(out_fileName.c_str(), "RECREATE");
-    TNtuple tup("tup", "tup", "hatS:pT2:nT:x1:x2:y:mtr2:mtr20:pdf1:pdf2:wt");
+    TNtuple tup("tup", "tup", "hatS:pT2:xF:nT:x1:x2:y:mtr2:mtr20:pdf1:pdf2:wt");
 
     //    double sMin = hMatr[0]->GetYaxis()->GetBinLowEdge(1);
     if (sMin < Mcc2) {
@@ -138,6 +138,8 @@ int main(int argc, char **argv) {
 
         double nT = random_generator.rand(0, 1), t = (Mcc2 - s) * nT, u = Mcc2 - s - t,
                 pT2 = t * u / s;
+        double cosPsi=2*nT-1;
+        double xF = (s+Mcc2)/(2*s)*(x1-x2)+(s-Mcc2)/(2*s)*(x1-x2)*cosPsi;
         wt *= (s - Mcc2);
         // conversion to dsdt
         wt *= 1. / (64 * PI * s)*4 / s;
@@ -157,8 +159,8 @@ int main(int argc, char **argv) {
             mtr2 += pow(4 * PI*alphaQCD, 3) * pow(mtr, 2);
         };
         double mtr0 = hMatr[0]->Interpolate(nT, xs), mtr20 = pow(mtr0, 2);
-        //    TNtuple tup("tup","tup","hatS:pT2:nT:x1:x2:y:mtr2:mtr20:pdf1:pdf2:wt");
-        tup.Fill(s, pT2, nT, x1, x2, y, mtr2, mtr20, pdf1, pdf2, wt);
+//    TNtuple tup("tup", "tup", "hatS:pT2:xF:nT:x1:x2:y:mtr2:mtr20:pdf1:pdf2:wt");
+        tup.Fill(s, pT2, xF, nT, x1, x2, y, mtr2, mtr20, pdf1, pdf2, wt);
 
     };
     tup.Write();
@@ -177,6 +179,10 @@ int main(int argc, char **argv) {
     hPt->Scale(1./nEv);
     saveHST(hPt,("hPt_"+f_to_string(S)+"_"+f_to_string(delta)+".hst").c_str());
     
+    TH1D *hXF=new TH1D("hXF","XF",20,-0.4,0.4); hXF->Sumw2();
+    tup.Project("hXF", "xF", "mtr2*pdf1*pdf2*wt");
+    hXF->Scale(1./nEv);
+    saveHST(hXF,("hXF_"+f_to_string(S)+"_"+f_to_string(delta)+".hst").c_str());
 
 
     return 0;
