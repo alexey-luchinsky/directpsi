@@ -139,7 +139,7 @@ int main(int argc, char **argv) {
         double nT = random_generator.rand(0, 1), t = (Mcc2 - s) * nT, u = Mcc2 - s - t,
                 pT2 = t * u / s;
         double cosPsi=2*nT-1;
-        double xF = (s+Mcc2)/(2*s)*(x1-x2)+(s-Mcc2)/(2*s)*(x1-x2)*cosPsi;
+        double xF = (s+Mcc2)/(2*s)*(x1-x2)+(s-Mcc2)/(2*s)*(x1+x2)*cosPsi;
         wt *= (s - Mcc2);
         // conversion to dsdt
         wt *= 1. / (64 * PI * s)*4 / s;
