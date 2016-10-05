@@ -171,6 +171,12 @@ int main(int argc, char **argv) {
     tup.Project("hAll", "sqrt(hatS)", "mtr2*pdf1*pdf2*wt");
     hAll->Scale(1. / nEv);
     saveHST(hAll, ("dSigmaDs_" + f_to_string(S) + "_" + f_to_string(delta) + "_All.hst").c_str());
+    
+    TH1D *hPt=new TH1D("hPt","hPt",20,0.5,2.5); hPt->Sumw2();
+    tup.Project("hPt", "sqrt(pT2)", "mtr2*pdf1*pdf2*wt");
+    hPt->Scale(1./nEv);
+    saveHST(hPt,("hPt_"+f_to_string(S)+"_"+f_to_string(delta)+".hst").c_str());
+    
 
 
     return 0;
