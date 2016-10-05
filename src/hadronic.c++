@@ -143,6 +143,8 @@ int main(int argc, char **argv) {
         wt *= 1. / (64 * PI * s)*4 / s;
         // symmetry, etc
         wt *= 1./(2*2*8*2*8);
+        // tranfer to nb
+        wt *= 0.389e6;
 
         double mtr2 = 0, mtr;
         if (debug)
