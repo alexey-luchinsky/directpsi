@@ -23,7 +23,5 @@ void saveHST(TH1D *hist, TString name, bool print) {
 };
 
 double wave_function(double q2, double delta) {
-    const double PI = acos(-1.);
-    double norm = pow(sqrt(PI)*delta,3);
-    return exp(-q2 / delta / delta) / norm;
+    return exp(-q2 / delta / delta);
 }
