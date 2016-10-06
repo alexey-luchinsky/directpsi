@@ -23,6 +23,7 @@ string in_fileName, out_fileName;
 double delta, S;
 double sMin, sMax, alpha;
 int nEv;
+string pdfName;
 
 bool load_integrals() {
     hist_file = new TFile(in_fileName.c_str(), "READ");
@@ -50,6 +51,7 @@ bool init_commandline_args(int argc, char **argv) {
         TCLAP::ValueArg<string> out_arg("o", "out", "output file name", false, "PP.root", "string", cmd);
         TCLAP::ValueArg<float> S_arg("s", "s", "squared energy of hadronic reaction", false, 500, "float", cmd);
         TCLAP::ValueArg<float> n_arg("n", "n", "log_10(nEv)", false, 6, "float", cmd);
+        TCLAP::ValueArg<string> pdfName_arg("p","pdf","pdf set name",false,"CT10","string",cmd);
         cmd.parse(argc, argv);
         in_fileName = in_agr.getValue();
         out_fileName = out_arg.getValue();
@@ -59,6 +61,7 @@ bool init_commandline_args(int argc, char **argv) {
             cout << " nEv=" << nEv << " is too large!" << endl;
             return false;
         }
+        pdfName=pdfName_arg.getValue();
         return true;
     } catch (TCLAP::ArgException e) {
         cout << " error " << e.error() << " for arg " << e.argId() << endl;
@@ -80,9 +83,8 @@ int main(int argc, char **argv) {
     init_commandline_args(argc, argv);
     // test
     // test2 one more
-    const string setname = "GRVPI1";//
     const int imem = 0;
-    const PDF *pdf = mkPDF(setname);
+    const PDF *pdf = mkPDF(pdfName);
 
     double Mcc = 3.1, Mcc2 = Mcc*Mcc, scale2 = Mcc2;
     save_pdf(pdf, scale2);
