@@ -80,7 +80,7 @@ int main(int argc, char **argv) {
     init_commandline_args(argc, argv);
     // test
     // test2 one more
-    const string setname = "GRVPI1";
+    const string setname = "GRVPI1";//
     const int imem = 0;
     const PDF *pdf = mkPDF(setname);
 
