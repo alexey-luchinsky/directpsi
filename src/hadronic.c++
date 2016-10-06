@@ -25,6 +25,7 @@ double delta, S;
 double sMin, sMax, alpha;
 int nEv;
 string pdfName;
+int nBins;
 
 bool load_integrals() {
     hist_file = new TFile(in_fileName.c_str(), "READ");
@@ -45,24 +46,33 @@ bool load_integrals() {
     return true;
 }
 
+string prefix;
+int nDebug;
+
 bool init_commandline_args(int argc, char **argv) {
     try {
         TCLAP::CmdLine cmd("Calculate hadronic process using double_export.exe program data", ' ', "0.9");
         TCLAP::ValueArg<string> in_agr("i", "in", "input file name", false, "interpolation.root", "string", cmd);
         TCLAP::ValueArg<string> out_arg("o", "out", "output file name", false, "PP.root", "string", cmd);
-        TCLAP::ValueArg<float> S_arg("s", "s", "squared energy of hadronic reaction", false, 500, "float", cmd);
+        TCLAP::ValueArg<float> e_arg("e", "e", "energy of hadronic reaction", false, 500, "float", cmd);
         TCLAP::ValueArg<float> n_arg("n", "n", "log_10(nEv)", false, 6, "float", cmd);
         TCLAP::ValueArg<string> pdfName_arg("p", "pdf", "pdf set name", false, "CT10", "string", cmd);
+        TCLAP::ValueArg<string> prefix_arg("","prefix","prefix for saved files",false,"","string",cmd);
+        TCLAP::ValueArg<int> nBins_arg("","nBins","number of histogram bins",false,10,"int",cmd);
+        TCLAP::ValueArg<int> nDebug_arg("","debud","number of debug events",false,0,"int",cmd);
         cmd.parse(argc, argv);
         in_fileName = in_agr.getValue();
         out_fileName = out_arg.getValue();
-        S = S_arg.getValue();
+        S = pow(e_arg.getValue(),2);
         nEv = pow(10, n_arg.getValue());
         if (nEv > 1e10) {
             cout << " nEv=" << nEv << " is too large!" << endl;
             return false;
         }
         pdfName = pdfName_arg.getValue();
+        prefix=prefix_arg.getValue();
+        nBins=nBins_arg.getValue();
+        nDebug=nDebug_arg.getValue();
         return true;
     } catch (TCLAP::ArgException e) {
         cout << " error " << e.error() << " for arg " << e.argId() << endl;
@@ -72,7 +82,7 @@ bool init_commandline_args(int argc, char **argv) {
 
 void save_pdf(const LHAPDF::PDF *pdf, double q2) {
     ofstream pdf_file;
-    pdf_file.open("pdf.txt");
+    pdf_file.open(prefix+"pdf.txt");
     double dx = 1e-4;
     for (double x = dx; x < 1. - dx; x += dx) {
         pdf_file << x << " " << pdf->xfxQ2(0, x, q2) / x << endl;
@@ -101,10 +111,9 @@ int main(int argc, char **argv) {
     ram.setMass(0, Mcc);
     ram.setMass(1, 0.);
 
-    TFile out_file(out_fileName.c_str(), "RECREATE");
+    TFile out_file((prefix+out_fileName).c_str(), "RECREATE");
     TNtuple tup("tup", "tup", "hatS:pT2:xF:nT:x1:x2:y:mtr2:mtr20:pdf1:pdf2:wt");
     // initialize  histograms
-    int nBins=10;
     TH1D *h_mFinal=new TH1D("mFinal","mFinal",nBins, sqrt(sMin), sqrt(sMax)); h_mFinal->Sumw2();
     TH1D *h_pT2=new TH1D("pT2","pT2",nBins,0,(S-Mcc2)/(2*sqrt(S))); h_pT2->Sumw2();
     TH1D *h_xF=new TH1D("xF","xF",nBins,-2,2); h_xF->Sumw2();
@@ -127,7 +136,7 @@ int main(int argc, char **argv) {
     EvtVector4R k1, k2, P, k3;
 
     for (int iEv = 0; iEv < nEv; ++iEv) {
-        bool debug = (iEv < 10);
+        bool debug = (iEv < nDebug);
         if (debug) cout << "----- Debug print at i=" << iEv << "---------" << endl;
         double wt = 1;
         double xs = random_generator.rand(0, 1);
@@ -210,14 +219,11 @@ int main(int argc, char **argv) {
     
     string hist_name="_e"+f_to_string(sqrt(S))+"_d"+f_to_string(delta)+"_a"+f_to_string(alpha)+"_"+pdfName+".hst";
     
-    h_mFinal->Scale(1./nEv); h_mFinal->Write(); saveHST(h_mFinal,"m"+hist_name);
-    h_pT2->Scale(1./nEv); h_pT2->Write(); saveHST(h_pT2,"pT2"+hist_name);
-    h_yPsi->Scale(1./nEv); h_yPsi->Write(); saveHST(h_yPsi,"yPsi"+hist_name);
-    h_xF->Scale(1./nEv); h_xF->Write(); saveHST(h_xF,"xF"+hist_name);
+    h_mFinal->Scale(1./nEv); h_mFinal->Write(); saveHST(h_mFinal,prefix+"m"+hist_name);
+    h_pT2->Scale(1./nEv); h_pT2->Write(); saveHST(h_pT2,prefix+"pT2"+hist_name);
+    h_yPsi->Scale(1./nEv); h_yPsi->Write(); saveHST(h_yPsi,prefix+"yPsi"+hist_name);
+    h_xF->Scale(1./nEv); h_xF->Write(); saveHST(h_xF,prefix+"xF"+hist_name);
     out_file.Save();
-
-
-
 
     return 0;
 }
