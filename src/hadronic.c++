@@ -81,12 +81,11 @@ void save_pdf(const LHAPDF::PDF *pdf, double q2) {
 
 int main(int argc, char **argv) {
     init_commandline_args(argc, argv);
-    // test
-    // test2 one more
+
     const int imem = 0;
     const PDF *pdf = mkPDF(pdfName);
 
-    double Mcc = 3.1, Mcc2 = Mcc*Mcc, scale2 = Mcc2;
+    double Mcc2 = Mcc*Mcc, scale2 = Mcc2;
     save_pdf(pdf, scale2);
 
     if (!load_integrals()) {
