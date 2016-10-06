@@ -103,8 +103,13 @@ int main(int argc, char **argv) {
 
     TFile out_file(out_fileName.c_str(), "RECREATE");
     TNtuple tup("tup", "tup", "hatS:pT2:xF:nT:x1:x2:y:mtr2:mtr20:pdf1:pdf2:wt");
-
-    //    double sMin = hMatr[0]->GetYaxis()->GetBinLowEdge(1);
+    // initialize  histograms
+    int nBins=10;
+    TH1D *h_mFinal=new TH1D("mFinal","mFinal",nBins, sqrt(sMin), sqrt(sMax)); h_mFinal->Sumw2();
+    TH1D *h_pT2=new TH1D("pT2","pT2",nBins,0,(S-Mcc2)/(2*sqrt(S))); h_pT2->Sumw2();
+    TH1D *h_xF=new TH1D("xF","xF",nBins,-2,2); h_xF->Sumw2();
+    TH1D *h_yPsi=new TH1D("yPsi","yPsi",nBins,-2,2); h_yPsi->Sumw2();
+    
     if (sMin < Mcc2) {
         cout << " root file sMin=" << sMin << " lower than Mcc2=" << Mcc2 << ". Setting sMin=Mcc2" << endl;
         sMin = Mcc2;
@@ -118,10 +123,6 @@ int main(int argc, char **argv) {
     cout << "delta=" << delta << endl;
     cout << " alpha=" << alpha << endl;
 
-    TH1D *h0 = new TH1D("h0", "h0", 30, sMin, sMax);
-    h0->Sumw2();
-    TH1D *hAll = new TH1D("hAll", "hAll", 30, sqrt(sMin), sqrt(sMax));
-    hAll->Sumw2();
 
     EvtVector4R k1, k2, P, k3;
 
@@ -197,30 +198,25 @@ int main(int argc, char **argv) {
         double mtr0 = hMatr[0]->Interpolate(nT, xs), mtr20 = pow(mtr0, 2);
         //    TNtuple tup("tup", "tup", "hatS:pT2:xF:nT:x1:x2:y:mtr2:mtr20:pdf1:pdf2:wt");
         tup.Fill(s, pT2, xF, nT, x1, x2, y, mtr2, mtr20, pdf1, pdf2, wt);
+        
+        // fill histograms
+        h_mFinal->Fill(sqrt(s),mtr2*pdf1*pdf2*wt);
+        h_pT2->Fill(get_pT2(P), mtr2*pdf1*pdf2*wt);
+        h_yPsi->Fill(getRapidity(P),mtr2*pdf1*pdf2*wt);
+        h_xF->Fill(xF,mtr2*pdf1*pdf2*wt);
 
     };
     tup.Write();
+    
+    string hist_name="_e"+f_to_string(sqrt(S))+"_d"+f_to_string(delta)+"_a"+f_to_string(alpha)+"_"+pdfName+".hst";
+    
+    h_mFinal->Scale(1./nEv); h_mFinal->Write(); saveHST(h_mFinal,"m"+hist_name);
+    h_pT2->Scale(1./nEv); h_pT2->Write(); saveHST(h_pT2,"pT2"+hist_name);
+    h_yPsi->Scale(1./nEv); h_yPsi->Write(); saveHST(h_yPsi,"yPsi"+hist_name);
+    h_xF->Scale(1./nEv); h_xF->Write(); saveHST(h_xF,"xF"+hist_name);
     out_file.Save();
 
-    tup.Project("h0", "hatS", "mtr20*pdf1*pdf2*wt");
-    h0->Scale(1. / nEv);
-    saveHST(h0, ("dSigmaDs_" + f_to_string(S) + "_" + f_to_string(delta) + "_1.hst").c_str());
 
-    tup.Project("hAll", "sqrt(hatS)", "mtr2*pdf1*pdf2*wt");
-    hAll->Scale(1. / nEv);
-    saveHST(hAll, ("dSigmaDs_" + f_to_string(S) + "_" + f_to_string(delta) + "_All.hst").c_str());
-
-    TH1D *hPt = new TH1D("hPt", "hPt", 20, 0.5, 2.5);
-    hPt->Sumw2();
-    tup.Project("hPt", "sqrt(pT2)", "mtr2*pdf1*pdf2*wt");
-    hPt->Scale(1. / nEv);
-    saveHST(hPt, ("hPt_" + f_to_string(S) + "_" + f_to_string(delta) + ".hst").c_str());
-
-    TH1D *hXF = new TH1D("hXF", "XF", 20, -0.4, 0.4);
-    hXF->Sumw2();
-    tup.Project("hXF", "xF", "mtr2*pdf1*pdf2*wt");
-    hXF->Scale(1. / nEv);
-    saveHST(hXF, ("hXF_" + f_to_string(S) + "_" + f_to_string(delta) + ".hst").c_str());
 
 
     return 0;

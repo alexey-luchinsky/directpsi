@@ -21,4 +21,5 @@ const int nMatr = 26;
 const double PI=acos(-1.);
 double const Mcc=3.1;
 double get_pT2(EvtVector4R P);
+double getRapidity(EvtVector4R P);
 #endif	/* NEWFILE_H */

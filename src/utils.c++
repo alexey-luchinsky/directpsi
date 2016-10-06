@@ -29,3 +29,7 @@ double wave_function(double q2, double delta) {
 double get_pT2(EvtVector4R P) {
     return pow(P.get(1),2) + pow(P.get(2),2);
 }
+
+double getRapidity(EvtVector4R P) {
+    return log((P.get(3)+P.get(0))/(P.get(3)-P.get(0)))/2;
+}
