@@ -66,11 +66,27 @@ EXEC_PROGRAM(lhapdf-config
 )
 MESSAGE("LHAPDF_LIBS" ${LHAPDF_LIBS})
 
-add_executable (hadronic.exe "src/hadronic.c++" "src/utils.c++")
+# adding sources for hadronic
+#add_executable (hadronic.exe "src/hadronic.c++" "src/utils.c++")
+#target_link_libraries(hadronic.exe ${ROOT_LIBRARIES})
+#target_link_libraries(hadronic.exe ${LHAPDF_LIBS})
+
+# adding sources for hadronic
+file(GLOB_RECURSE hadronic_SOURCES "src/*.c++" "src/*.cpp" "src/*.for" )
+list(REMOVE_ITEM hadronic_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/export_data.c++")
+list(REMOVE_ITEM hadronic_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/double_export.c++")
+list(REMOVE_ITEM hadronic_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/partonic.c++")
+list(REMOVE_ITEM hadronic_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/delta.c++")
+list(REMOVE_ITEM hadronic_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/check.c++")
+list(REMOVE_ITEM hadronic_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/calcInts.c++")
+list(REMOVE_ITEM hadronic_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/mtr.c++")
+list(REMOVE_ITEM hadronic_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/mtr0.c++")
+add_executable (hadronic.exe "src/hadronic.c++" ${hadronic_SOURCES})
 target_link_libraries(hadronic.exe ${ROOT_LIBRARIES})
 target_link_libraries(hadronic.exe ${LHAPDF_LIBS})
 
-#adding sources for hadronic
+
+#adding sources for check
 add_executable (check.exe "src/check.c++" "src/utils.c++")
 target_link_libraries(check.exe ${ROOT_LIBRARIES})
 

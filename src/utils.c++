@@ -25,3 +25,7 @@ void saveHST(TH1D *hist, TString name, bool print) {
 double wave_function(double q2, double delta) {
     return exp(-q2 / delta / delta);
 }
+
+double get_pT2(EvtVector4R P) {
+    return pow(P.get(1),2) + pow(P.get(2),2);
+}

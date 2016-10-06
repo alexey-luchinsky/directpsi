@@ -9,6 +9,7 @@
 #include "TVectorD.h"
 #include <tclap/CmdLine.h>
 #include "utils.h"
+#include "ramC/rambo2.h"
 
 using namespace std;
 using namespace LHAPDF;
@@ -51,7 +52,7 @@ bool init_commandline_args(int argc, char **argv) {
         TCLAP::ValueArg<string> out_arg("o", "out", "output file name", false, "PP.root", "string", cmd);
         TCLAP::ValueArg<float> S_arg("s", "s", "squared energy of hadronic reaction", false, 500, "float", cmd);
         TCLAP::ValueArg<float> n_arg("n", "n", "log_10(nEv)", false, 6, "float", cmd);
-        TCLAP::ValueArg<string> pdfName_arg("p","pdf","pdf set name",false,"CT10","string",cmd);
+        TCLAP::ValueArg<string> pdfName_arg("p", "pdf", "pdf set name", false, "CT10", "string", cmd);
         cmd.parse(argc, argv);
         in_fileName = in_agr.getValue();
         out_fileName = out_arg.getValue();
@@ -61,7 +62,7 @@ bool init_commandline_args(int argc, char **argv) {
             cout << " nEv=" << nEv << " is too large!" << endl;
             return false;
         }
-        pdfName=pdfName_arg.getValue();
+        pdfName = pdfName_arg.getValue();
         return true;
     } catch (TCLAP::ArgException e) {
         cout << " error " << e.error() << " for arg " << e.argId() << endl;
@@ -96,6 +97,10 @@ int main(int argc, char **argv) {
 
 
     Random random_generator;
+    rambo2 ram;
+    ram.setMass(0, Mcc);
+    ram.setMass(1, 0.);
+
     TFile out_file(out_fileName.c_str(), "RECREATE");
     TNtuple tup("tup", "tup", "hatS:pT2:xF:nT:x1:x2:y:mtr2:mtr20:pdf1:pdf2:wt");
 
@@ -118,15 +123,20 @@ int main(int argc, char **argv) {
     TH1D *hAll = new TH1D("hAll", "hAll", 30, sqrt(sMin), sqrt(sMax));
     hAll->Sumw2();
 
+    EvtVector4R k1, k2, P, k3;
+
     for (int iEv = 0; iEv < nEv; ++iEv) {
-        bool debug = (iEv < 0);
+        bool debug = (iEv < 3);
         if (debug) cout << "----- Debug print at i=" << iEv << "---------" << endl;
         double wt = 1;
         double xs = random_generator.rand(0, 1);
         double s = sMin + (sMax - sMin) * pow(xs, alpha);
         wt *= alpha * (sMax - sMin) * pow(xs, alpha - 1) / S;
-
-        if (debug) cout << "\t s=" << s << endl;
+        double ecm = sqrt(s);
+        ram.setECM(ecm);
+        if (!ram.next()) continue;
+        P = *ram.getV(0);
+        k3 = *ram.getV(1);
 
         // y
         double yMax = log(S / s) / 2;
@@ -139,15 +149,27 @@ int main(int argc, char **argv) {
         if (debug) cout << "\t x1=" << x1 << " pdf1=" << pdf1 << endl;
         double x2 = sqrt(s / S) * exp(-y), pdf2 = pdf->xfxQ2(0, x2, scale2) / x2;
 
-        double nT = random_generator.rand(0, 1), t = (Mcc2 - s) * nT, u = Mcc2 - s - t,
-                pT2 = t * u / s;
-        double cosPsi=2*nT-1;
-        double xF = (s+Mcc2)/(2*s)*(x1-x2)+(s-Mcc2)/(2*s)*(x1+x2)*cosPsi;
+        k1.set(ecm*x1, 0, 0, ecm*x1);
+        k2.set(ecm*x2, 0, 0, -ecm*x2);
+        P.applyBoostTo(k1+k2,true); k3.applyBoostTo(k1+k2,true);
+        
+        double t=(k1-P).mass2(), nT=t/(Mcc2-s), u=(k1-k3).mass2();
+        double pT2=get_pT2(P);
+        double xF=2*P.get(3)/ecm;
+        if (debug) {
+            cout << "\t s=" << s << endl;
+            cout << "\t k1=" << k1 << " k2=" << k2 << endl;
+            cout << "\t P=" << P <<" P^2="<<P.mass2()<< " k3=" << k3 << " k3^2="<<k3.mass2()<<endl;
+            cout<<" Ptot="<<k1+k2<<"="<<P+k3<<endl;
+            cout << "\t t="<<t<<" u="<<u<<" s+t+u="<<s+t+u<<endl;
+        };
+
+        
         wt *= (s - Mcc2);
         // conversion to dsdt
         wt *= 1. / (64 * PI * s)*4 / s;
         // symmetry, etc
-        wt *= 1./(2*2*8*2*8);
+        wt *= 1. / (2 * 2 * 8 * 2 * 8);
         // tranfer to nb
         wt *= 0.389e6;
 
@@ -162,7 +184,7 @@ int main(int argc, char **argv) {
             mtr2 += pow(4 * PI*alphaQCD, 3) * pow(mtr, 2);
         };
         double mtr0 = hMatr[0]->Interpolate(nT, xs), mtr20 = pow(mtr0, 2);
-//    TNtuple tup("tup", "tup", "hatS:pT2:xF:nT:x1:x2:y:mtr2:mtr20:pdf1:pdf2:wt");
+        //    TNtuple tup("tup", "tup", "hatS:pT2:xF:nT:x1:x2:y:mtr2:mtr20:pdf1:pdf2:wt");
         tup.Fill(s, pT2, xF, nT, x1, x2, y, mtr2, mtr20, pdf1, pdf2, wt);
 
     };
@@ -176,16 +198,18 @@ int main(int argc, char **argv) {
     tup.Project("hAll", "sqrt(hatS)", "mtr2*pdf1*pdf2*wt");
     hAll->Scale(1. / nEv);
     saveHST(hAll, ("dSigmaDs_" + f_to_string(S) + "_" + f_to_string(delta) + "_All.hst").c_str());
-    
-    TH1D *hPt=new TH1D("hPt","hPt",20,0.5,2.5); hPt->Sumw2();
+
+    TH1D *hPt = new TH1D("hPt", "hPt", 20, 0.5, 2.5);
+    hPt->Sumw2();
     tup.Project("hPt", "sqrt(pT2)", "mtr2*pdf1*pdf2*wt");
-    hPt->Scale(1./nEv);
-    saveHST(hPt,("hPt_"+f_to_string(S)+"_"+f_to_string(delta)+".hst").c_str());
-    
-    TH1D *hXF=new TH1D("hXF","XF",20,-0.4,0.4); hXF->Sumw2();
+    hPt->Scale(1. / nEv);
+    saveHST(hPt, ("hPt_" + f_to_string(S) + "_" + f_to_string(delta) + ".hst").c_str());
+
+    TH1D *hXF = new TH1D("hXF", "XF", 20, -0.4, 0.4);
+    hXF->Sumw2();
     tup.Project("hXF", "xF", "mtr2*pdf1*pdf2*wt");
-    hXF->Scale(1./nEv);
-    saveHST(hXF,("hXF_"+f_to_string(S)+"_"+f_to_string(delta)+".hst").c_str());
+    hXF->Scale(1. / nEv);
+    saveHST(hXF, ("hXF_" + f_to_string(S) + "_" + f_to_string(delta) + ".hst").c_str());
 
 
     return 0;
