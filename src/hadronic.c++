@@ -78,7 +78,7 @@ void save_pdf(const LHAPDF::PDF *pdf, double q2) {
 
 int main(int argc, char **argv) {
     init_commandline_args(argc, argv);
-    const string setname = "CT10";
+    const string setname = "GRVPI1";
     const int imem = 0;
     const PDF *pdf = mkPDF(setname);
 
