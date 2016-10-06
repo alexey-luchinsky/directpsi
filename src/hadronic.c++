@@ -126,17 +126,23 @@ int main(int argc, char **argv) {
     EvtVector4R k1, k2, P, k3;
 
     for (int iEv = 0; iEv < nEv; ++iEv) {
-        bool debug = (iEv < 3);
+        bool debug = (iEv < 10);
         if (debug) cout << "----- Debug print at i=" << iEv << "---------" << endl;
         double wt = 1;
         double xs = random_generator.rand(0, 1);
         double s = sMin + (sMax - sMin) * pow(xs, alpha);
         wt *= alpha * (sMax - sMin) * pow(xs, alpha - 1) / S;
         double ecm = sqrt(s);
+        if(debug) {
+            cout<<" ecm="<<ecm<<";"<<endl;
+        }
         ram.setECM(ecm);
         if (!ram.next()) continue;
-        P = *ram.getV(0);
-        k3 = *ram.getV(1);
+        P = *ram.getV(0);   k3 = *ram.getV(1);
+        if(debug) {
+            cout<<" before boost:"<<endl;
+            cout<<"\t P="<<P<<"; k3="<<k3<<";"<<endl;
+        }
 
         // y
         double yMax = log(S / s) / 2;
@@ -146,22 +152,27 @@ int main(int argc, char **argv) {
 
 
         double x1 = sqrt(s / S) * exp(y), pdf1 = pdf->xfxQ2(0, x1, scale2) / x1;
-        if (debug) cout << "\t x1=" << x1 << " pdf1=" << pdf1 << endl;
+        if (debug) cout << "\t x1=" << x1 << "; pdf1=" << pdf1 <<";"<< endl;
         double x2 = sqrt(s / S) * exp(-y), pdf2 = pdf->xfxQ2(0, x2, scale2) / x2;
 
-        k1.set(ecm*x1, 0, 0, ecm*x1);
-        k2.set(ecm*x2, 0, 0, -ecm*x2);
-        P.applyBoostTo(k1+k2,true); k3.applyBoostTo(k1+k2,true);
+        k1.set(sqrt(S)*x1/2, 0, 0, sqrt(S)*x1/2);
+        k2.set(sqrt(S)*x2/2, 0, 0, -sqrt(S)*x2/2);
+        double gamma=(x1+x2)/(2*sqrt(x1*x2)), beta=(x1-x2)/(x1+x2);
+        P.set( gamma*(P.get(0)+beta*P.get(3)), P.get(1), P.get(2), gamma*(P.get(3)+beta*P.get(0)));
+        k3.set( gamma*(k3.get(0)+beta*k3.get(3)), k3.get(1), k3.get(2), gamma*(k3.get(3)+beta*k3.get(0)));
+        
         
         double t=(k1-P).mass2(), nT=t/(Mcc2-s), u=(k1-k3).mass2();
         double pT2=get_pT2(P);
         double xF=2*P.get(3)/ecm;
         if (debug) {
-            cout << "\t s=" << s << endl;
-            cout << "\t k1=" << k1 << " k2=" << k2 << endl;
-            cout << "\t P=" << P <<" P^2="<<P.mass2()<< " k3=" << k3 << " k3^2="<<k3.mass2()<<endl;
+            cout << "\t s=" << s << ";"<<endl;
+            cout<<" x1="<<x1<<"; x2="<<x2<<";"<<endl;
+            cout<<" gamma="<<gamma<<"; beta="<<beta<<";"<<endl;
+            cout << "\t k1=" << k1 << "; k2=" << k2 << ";"<<endl;
+            cout << "\t aP=" << P <<"; P^2="<<P.mass2()<< "; ak3=" << k3 << "; k3^2="<<k3.mass2()<<";"<<endl;
             cout<<" Ptot="<<k1+k2<<"="<<P+k3<<endl;
-            cout << "\t t="<<t<<" u="<<u<<" s+t+u="<<s+t+u<<endl;
+            cout << "\t t="<<t<<"; nT="<<nT<<" u="<<u<<"; s+t+u="<<s+t+u<<endl;
         };
 
         
@@ -171,7 +182,7 @@ int main(int argc, char **argv) {
         // symmetry, etc
         wt *= 1. / (2 * 2 * 8 * 2 * 8);
         // tranfer to nb
-        wt *= 0.389e6;
+        wt *= 0.389*1e6;
 
         double mtr2 = 0, mtr;
         if (debug)
