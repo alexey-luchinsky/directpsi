@@ -82,7 +82,7 @@ bool init_commandline_args(int argc, char **argv) {
 
 void save_pdf(const LHAPDF::PDF *pdf, double q2) {
     ofstream pdf_file;
-    pdf_file.open(prefix+"pdf.txt");
+    pdf_file.open((prefix+"pdf.txt").c_str());
     double dx = 1e-4;
     for (double x = dx; x < 1. - dx; x += dx) {
         pdf_file << x << " " << pdf->xfxQ2(0, x, q2) / x << endl;
