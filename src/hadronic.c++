@@ -114,7 +114,7 @@ int main(int argc, char **argv) {
     TFile out_file((prefix+out_fileName).c_str(), "RECREATE");
     TNtuple tup("tup", "tup", "hatS:pT2:xF:nT:x1:x2:y:mtr2:mtr20:pdf1:pdf2:wt");
     // initialize  histograms
-    TH1D *h_mFinal=new TH1D("mFinal","mFinal",nBins, sqrt(sMin), 3); h_mFinal->Sumw2();
+    TH1D *h_mFinal=new TH1D("mFinal","mFinal",nBins, sqrt(sMin), 5); h_mFinal->Sumw2();
     TH1D *h_pT2=new TH1D("pT2","pT2",nBins,0,(S-Mcc2)/(2*sqrt(S))); h_pT2->Sumw2();
     TH1D *h_xF=new TH1D("xF","xF",nBins,-2,2); h_xF->Sumw2();
     TH1D *h_yPsi=new TH1D("yPsi","yPsi",nBins,-2,2); h_yPsi->Sumw2();
