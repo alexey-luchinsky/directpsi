@@ -116,6 +116,8 @@ void calc_integrals(int nEv) {
     ramCM.setMass(1, 0.);
 
     for (int iEv = 0; iEv < nEv; ++iEv) {
+        if( (iEv % (nEv/10))==0)
+            cout<<"======== "<<(int)(100.*iEv/nEv)<<"% =========="<<endl;
         double xs=ramCM.random_generator->rand(0,1);
         s = sMin+(sMax-sMin)*pow(xs,alpha);
 
@@ -125,7 +127,6 @@ void calc_integrals(int nEv) {
         k2.set(ecm / 2, 0, 0, -ecm / 2);
 
         bool debug = (iEv < 3);
-        if (iEv % (nEv / 10) == 0) cout << iEv << endl;
         if (debug) cout << "--------------- Debug print at iEv=" << iEv << "-------------" << endl;
         double weight = gen_event(debug);
         fill_matr();
