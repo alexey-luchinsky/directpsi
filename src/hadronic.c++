@@ -21,7 +21,7 @@ TFile *hist_file;
 
 
 string in_fileName, out_fileName;
-double delta, S;
+double delta, S, mom;
 double sMin, sMax, alpha;
 int nEv;
 string pdfName;
@@ -54,16 +54,16 @@ bool init_commandline_args(int argc, char **argv) {
         TCLAP::CmdLine cmd("Calculate hadronic process using double_export.exe program data", ' ', "0.9");
         TCLAP::ValueArg<string> in_agr("i", "in", "input file name", false, "interpolation.root", "string", cmd);
         TCLAP::ValueArg<string> out_arg("o", "out", "output file name", false, "PP.root", "string", cmd);
-        TCLAP::ValueArg<float> e_arg("e", "e", "energy of hadronic reaction", false, 500, "float", cmd);
+        TCLAP::ValueArg<float> mom_arg("e", "energy", "beam energy", false, 500, "float", cmd);
         TCLAP::ValueArg<float> n_arg("n", "n", "log_10(nEv)", false, 6, "float", cmd);
         TCLAP::ValueArg<string> pdfName_arg("p", "pdf", "pdf set name", false, "CT10", "string", cmd);
         TCLAP::ValueArg<string> prefix_arg("","prefix","prefix for saved files",false,"","string",cmd);
-        TCLAP::ValueArg<int> nBins_arg("","nBins","number of histogram bins",false,10,"int",cmd);
-        TCLAP::ValueArg<int> nDebug_arg("","debud","number of debug events",false,0,"int",cmd);
+        TCLAP::ValueArg<int> nDebug_arg("","debug","number of debug events",false,0,"int",cmd);
         cmd.parse(argc, argv);
         in_fileName = in_agr.getValue();
         out_fileName = out_arg.getValue();
-        S = pow(e_arg.getValue(),2);
+        mom=mom_arg.getValue();
+        S = pow(mp,2)+2*mom*mp;
         nEv = pow(10, n_arg.getValue());
         if (nEv > 1e10) {
             cout << " nEv=" << nEv << " is too large!" << endl;
@@ -71,7 +71,6 @@ bool init_commandline_args(int argc, char **argv) {
         }
         pdfName = pdfName_arg.getValue();
         prefix=prefix_arg.getValue();
-        nBins=nBins_arg.getValue();
         nDebug=nDebug_arg.getValue();
         return true;
     } catch (TCLAP::ArgException e) {
@@ -155,10 +154,12 @@ int main(int argc, char **argv) {
 
 
     EvtVector4R k1, k2, P, k3;
+    EvtVector4R p1(mom,0,0,sqrt(mom*mom-mp*mp)),p2(mp,0,0,0);
 
     for (int iEv = 0; iEv < nEv; ++iEv) {
         bool debug = (iEv < nDebug);
-//        if( iEv % ())
+        if( iEv % (nEv/10) == 0)
+            cout<<"========= "<<(int)(100.*iEv/nEv)<<"% ======="<<endl;
         if (debug) cout << "----- Debug print at i=" << iEv << "---------" << endl;
         double wt = 1;
         double xs = random_generator.rand(0, 1);
@@ -239,7 +240,7 @@ int main(int argc, char **argv) {
     };
     tup.Write();
     
-    string hist_name="_e"+f_to_string(sqrt(S))+"_d"+f_to_string(delta)+"_a"+f_to_string(alpha)+"_"+pdfName+".hst";
+    string hist_name="_e"+f_to_string(mom)+"_d"+f_to_string(delta)+"_a"+f_to_string(alpha)+"_"+pdfName+".hst";
     
     h_mFinal->Scale(1./nEv); h_mFinal->Write(); saveHST(h_mFinal,prefix+"m"+hist_name);
     h_pT2->Scale(1./nEv); h_pT2->Write(); saveHST(h_pT2,prefix+"pT2"+hist_name);
