@@ -90,8 +90,25 @@ void save_pdf(const LHAPDF::PDF *pdf, double q2) {
     pdf_file.close();
 }
 
+vector<double> read_bins(string file_name) {
+    vector<double> bins;
+    ifstream f(file_name);
+    if(!f.is_open()) {
+        cout<<" Cannot read file "<<file_name<<endl;
+        return bins;
+    };
+    double x;
+    while(!f.eof()) {
+        f>>x;
+        bins.push_back(x);
+    };
+    bins.pop_back();
+    return bins;
+}
+
 int main(int argc, char **argv) {
     init_commandline_args(argc, argv);
+    
 
     const int imem = 0;
     const PDF *pdf = mkPDF(pdfName);
@@ -114,10 +131,14 @@ int main(int argc, char **argv) {
     TFile out_file((prefix+out_fileName).c_str(), "RECREATE");
     TNtuple tup("tup", "tup", "hatS:pT2:xF:nT:x1:x2:y:yPsi:mtr2:mtr20:pdf1:pdf2:wt");
     // initialize  histograms
-    TH1D *h_mFinal=new TH1D("mFinal","mFinal",nBins, sqrt(sMin), 5); h_mFinal->Sumw2();
-    TH1D *h_pT2=new TH1D("pT2","pT2",nBins,0,(S-Mcc2)/(2*sqrt(S))); h_pT2->Sumw2();
-    TH1D *h_xF=new TH1D("xF","xF",nBins,-2,2); h_xF->Sumw2();
-    TH1D *h_yPsi=new TH1D("yPsi","yPsi",nBins,-1,1); h_yPsi->Sumw2();
+    vector<double> mBins=read_bins(prefix+"bins_m.txt");
+    TH1D *h_mFinal=new TH1D("mFinal","mFinal",mBins.size(), &mBins[0]); h_mFinal->Sumw2();  
+    vector<double> pT2Bins=read_bins(prefix+"bins_pT2.txt");    
+    TH1D *h_pT2=new TH1D("pT2","pT2",pT2Bins.size(), &pT2Bins[0]); h_pT2->Sumw2();
+    vector<double> xFBins=read_bins(prefix+"bins_xF.txt");        
+    TH1D *h_xF=new TH1D("xF","xF",xFBins.size(),&xFBins[0]); h_xF->Sumw2();
+    vector<double> yPsiBins=read_bins(prefix+"bins_yPsi.txt");    
+    TH1D *h_yPsi=new TH1D("yPsi","yPsi",yPsiBins.size(),&yPsiBins[0]); h_yPsi->Sumw2();
     
     if (sMin < Mcc2) {
         cout << " root file sMin=" << sMin << " lower than Mcc2=" << Mcc2 << ". Setting sMin=Mcc2" << endl;
