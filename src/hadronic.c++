@@ -91,7 +91,7 @@ void save_pdf(const LHAPDF::PDF *pdf, double q2) {
 
 vector<double> read_bins(string file_name) {
     vector<double> bins;
-    ifstream f(file_name);
+    ifstream f(file_name.c_str());
     if(!f.is_open()) {
         cout<<" Cannot read file "<<file_name<<endl;
         return bins;
