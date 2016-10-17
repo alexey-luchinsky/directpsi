@@ -112,12 +112,12 @@ int main(int argc, char **argv) {
     ram.setMass(1, 0.);
 
     TFile out_file((prefix+out_fileName).c_str(), "RECREATE");
-    TNtuple tup("tup", "tup", "hatS:pT2:xF:nT:x1:x2:y:mtr2:mtr20:pdf1:pdf2:wt");
+    TNtuple tup("tup", "tup", "hatS:pT2:xF:nT:x1:x2:y:yPsi:mtr2:mtr20:pdf1:pdf2:wt");
     // initialize  histograms
     TH1D *h_mFinal=new TH1D("mFinal","mFinal",nBins, sqrt(sMin), 5); h_mFinal->Sumw2();
     TH1D *h_pT2=new TH1D("pT2","pT2",nBins,0,(S-Mcc2)/(2*sqrt(S))); h_pT2->Sumw2();
     TH1D *h_xF=new TH1D("xF","xF",nBins,-2,2); h_xF->Sumw2();
-    TH1D *h_yPsi=new TH1D("yPsi","yPsi",nBins,-2,2); h_yPsi->Sumw2();
+    TH1D *h_yPsi=new TH1D("yPsi","yPsi",nBins,-1,1); h_yPsi->Sumw2();
     
     if (sMin < Mcc2) {
         cout << " root file sMin=" << sMin << " lower than Mcc2=" << Mcc2 << ". Setting sMin=Mcc2" << endl;
@@ -137,6 +137,7 @@ int main(int argc, char **argv) {
 
     for (int iEv = 0; iEv < nEv; ++iEv) {
         bool debug = (iEv < nDebug);
+//        if( iEv % ())
         if (debug) cout << "----- Debug print at i=" << iEv << "---------" << endl;
         double wt = 1;
         double xs = random_generator.rand(0, 1);
@@ -206,7 +207,7 @@ int main(int argc, char **argv) {
         };
         double mtr0 = hMatr[0]->Interpolate(nT, xs), mtr20 = pow(mtr0, 2);
         //    TNtuple tup("tup", "tup", "hatS:pT2:xF:nT:x1:x2:y:mtr2:mtr20:pdf1:pdf2:wt");
-        tup.Fill(s, pT2, xF, nT, x1, x2, y, mtr2, mtr20, pdf1, pdf2, wt);
+        tup.Fill(s, pT2, xF, nT, x1, x2, y, getRapidity(P), mtr2, mtr20, pdf1, pdf2, wt);
         
         // fill histograms
         h_mFinal->Fill(sqrt(s),mtr2*pdf1*pdf2*wt);

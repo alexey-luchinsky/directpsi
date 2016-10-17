@@ -31,5 +31,5 @@ double get_pT2(EvtVector4R P) {
 }
 
 double getRapidity(EvtVector4R P) {
-    return log((P.get(3)+P.get(0))/(P.get(3)-P.get(0)))/2;
+    return log((P.get(0)+P.get(3))/(P.get(0)-P.get(3)))/2;
 }
