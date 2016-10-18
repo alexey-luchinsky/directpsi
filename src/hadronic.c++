@@ -57,21 +57,21 @@ bool init_commandline_args(int argc, char **argv) {
         TCLAP::ValueArg<float> mom_arg("e", "energy", "beam energy", false, 500, "float", cmd);
         TCLAP::ValueArg<float> n_arg("n", "n", "log_10(nEv)", false, 6, "float", cmd);
         TCLAP::ValueArg<string> pdfName_arg("p", "pdf", "pdf set name", false, "CT10", "string", cmd);
-        TCLAP::ValueArg<string> prefix_arg("","prefix","prefix for saved files",false,"","string",cmd);
-        TCLAP::ValueArg<int> nDebug_arg("","debug","number of debug events",false,0,"int",cmd);
+        TCLAP::ValueArg<string> prefix_arg("", "prefix", "prefix for saved files", false, "", "string", cmd);
+        TCLAP::ValueArg<int> nDebug_arg("", "debug", "number of debug events", false, 0, "int", cmd);
         cmd.parse(argc, argv);
         in_fileName = in_agr.getValue();
         out_fileName = out_arg.getValue();
-        mom=mom_arg.getValue();
-        S = pow(mp,2)+2*mom*mp;
+        mom = mom_arg.getValue();
+        S = pow(mp, 2) + 2 * mom*mp;
         nEv = pow(10, n_arg.getValue());
         if (nEv > 1e10) {
             cout << " nEv=" << nEv << " is too large!" << endl;
             return false;
         }
         pdfName = pdfName_arg.getValue();
-        prefix=prefix_arg.getValue();
-        nDebug=nDebug_arg.getValue();
+        prefix = prefix_arg.getValue();
+        nDebug = nDebug_arg.getValue();
         return true;
     } catch (TCLAP::ArgException e) {
         cout << " error " << e.error() << " for arg " << e.argId() << endl;
@@ -81,7 +81,7 @@ bool init_commandline_args(int argc, char **argv) {
 
 void save_pdf(const LHAPDF::PDF *pdf, double q2) {
     ofstream pdf_file;
-    pdf_file.open((prefix+"pdf.txt").c_str());
+    pdf_file.open((prefix + "pdf.txt").c_str());
     double dx = 1e-4;
     for (double x = dx; x < 1. - dx; x += dx) {
         pdf_file << x << " " << pdf->xfxQ2(0, x, q2) / x << endl;
@@ -92,12 +92,12 @@ void save_pdf(const LHAPDF::PDF *pdf, double q2) {
 vector<double> read_bins(string file_name) {
     vector<double> bins;
     ifstream f(file_name.c_str());
-    if(!f.is_open()) {
-        cout<<" Cannot read file "<<file_name<<endl;
+    if (!f.is_open()) {
+        cout << " Cannot read file " << file_name << endl;
         return bins;
     };
     double x;
-    while(!f.eof()) {
+    while (!f.eof()) {
         f>>x;
         bins.push_back(x);
     };
@@ -107,7 +107,7 @@ vector<double> read_bins(string file_name) {
 
 int main(int argc, char **argv) {
     init_commandline_args(argc, argv);
-    
+
 
     const int imem = 0;
     const PDF *pdf = mkPDF(pdfName);
@@ -127,18 +127,22 @@ int main(int argc, char **argv) {
     ram.setMass(0, Mcc);
     ram.setMass(1, 0.);
 
-    TFile out_file((prefix+out_fileName).c_str(), "RECREATE");
+    TFile out_file((prefix + out_fileName).c_str(), "RECREATE");
     TNtuple tup("tup", "tup", "hatS:pT2:xF:nT:x1:x2:y:yPsi:mtr2:mtr20:pdf1:pdf2:wt");
     // initialize  histograms
-    vector<double> mBins=read_bins(prefix+"bins_m.txt");
-    TH1D *h_mFinal=new TH1D("mFinal","mFinal",mBins.size(), &mBins[0]); h_mFinal->Sumw2();  
-    vector<double> pT2Bins=read_bins(prefix+"bins_pT2.txt");    
-    TH1D *h_pT2=new TH1D("pT2","pT2",pT2Bins.size(), &pT2Bins[0]); h_pT2->Sumw2();
-    vector<double> xFBins=read_bins(prefix+"bins_xF.txt");        
-    TH1D *h_xF=new TH1D("xF","xF",xFBins.size(),&xFBins[0]); h_xF->Sumw2();
-    vector<double> yPsiBins=read_bins(prefix+"bins_yPsi.txt");    
-    TH1D *h_yPsi=new TH1D("yPsi","yPsi",yPsiBins.size(),&yPsiBins[0]); h_yPsi->Sumw2();
-    
+    vector<double> mBins = read_bins(prefix + "bins_m.txt");
+    TH1D *h_mFinal = new TH1D("mFinal", "mFinal", mBins.size(), &mBins[0]);
+    h_mFinal->Sumw2();
+    vector<double> pT2Bins = read_bins(prefix + "bins_pT2.txt");
+    TH1D *h_pT2 = new TH1D("pT2", "pT2", pT2Bins.size(), &pT2Bins[0]);
+    h_pT2->Sumw2();
+    vector<double> xFBins = read_bins(prefix + "bins_xF.txt");
+    TH1D *h_xF = new TH1D("xF", "xF", xFBins.size(), &xFBins[0]);
+    h_xF->Sumw2();
+    vector<double> yPsiBins = read_bins(prefix + "bins_yPsi.txt");
+    TH1D *h_yPsi = new TH1D("yPsi", "yPsi", yPsiBins.size(), &yPsiBins[0]);
+    h_yPsi->Sumw2();
+
     if (sMin < Mcc2) {
         cout << " root file sMin=" << sMin << " lower than Mcc2=" << Mcc2 << ". Setting sMin=Mcc2" << endl;
         sMin = Mcc2;
@@ -154,27 +158,31 @@ int main(int argc, char **argv) {
 
 
     EvtVector4R k1, k2, P, k3;
-    EvtVector4R p1(mom,0,0,sqrt(mom*mom-mp*mp)),p2(mp,0,0,0);
+    EvtVector4R p1(mom, 0, 0, sqrt(mom * mom - mp * mp)), p2(mp, 0, 0, 0);
 
     for (int iEv = 0; iEv < nEv; ++iEv) {
         bool debug = (iEv < nDebug);
-        if( iEv % (nEv/10) == 0)
-            cout<<"========= "<<(int)(100.*iEv/nEv)<<"% ======="<<endl;
+        if (iEv % (nEv / 10) == 0)
+            cout << "========= " << (int) (100. * iEv / nEv) << "% =======" << endl;
         if (debug) cout << "----- Debug print at i=" << iEv << "---------" << endl;
         double wt = 1;
         double xs = random_generator.rand(0, 1);
         double s = sMin + (sMax - sMin) * pow(xs, alpha);
+
         wt *= alpha * (sMax - sMin) * pow(xs, alpha - 1) / S;
         double ecm = sqrt(s);
-        if(debug) {
-            cout<<" ecm="<<ecm<<";"<<endl;
+        if (ecm < h_mFinal->GetBinLowEdge(1))
+            continue;
+        if (debug) {
+            cout << " ecm=" << ecm << ";" << endl;
         }
         ram.setECM(ecm);
         if (!ram.next()) continue;
-        P = *ram.getV(0);   k3 = *ram.getV(1);
-        if(debug) {
-            cout<<" before boost:"<<endl;
-            cout<<"\t P="<<P<<"; k3="<<k3<<";"<<endl;
+        P = *ram.getV(0);
+        k3 = *ram.getV(1);
+        if (debug) {
+            cout << " before boost:" << endl;
+            cout << "\t P=" << P << "; k3=" << k3 << ";" << endl;
         }
 
         // y
@@ -185,37 +193,40 @@ int main(int argc, char **argv) {
 
 
         double x1 = sqrt(s / S) * exp(y), pdf1 = pdf->xfxQ2(0, x1, scale2) / x1;
-        if (debug) cout << "\t x1=" << x1 << "; pdf1=" << pdf1 <<";"<< endl;
+        if (debug) cout << "\t x1=" << x1 << "; pdf1=" << pdf1 << ";" << endl;
         double x2 = sqrt(s / S) * exp(-y), pdf2 = pdf->xfxQ2(0, x2, scale2) / x2;
 
-        k1.set(sqrt(S)*x1/2, 0, 0, sqrt(S)*x1/2);
-        k2.set(sqrt(S)*x2/2, 0, 0, -sqrt(S)*x2/2);
-        double gamma=(x1+x2)/(2*sqrt(x1*x2)), beta=(x1-x2)/(x1+x2);
-        P.set( gamma*(P.get(0)+beta*P.get(3)), P.get(1), P.get(2), gamma*(P.get(3)+beta*P.get(0)));
-        k3.set( gamma*(k3.get(0)+beta*k3.get(3)), k3.get(1), k3.get(2), gamma*(k3.get(3)+beta*k3.get(0)));
-        
-        
-        double t=(k1-P).mass2(), nT=t/(Mcc2-s), u=(k1-k3).mass2();
-        double pT2=get_pT2(P);
-        double xF=2*P.get(3)/ecm;
+        k1.set(sqrt(S) * x1 / 2, 0, 0, sqrt(S) * x1 / 2);
+        k2.set(sqrt(S) * x2 / 2, 0, 0, -sqrt(S) * x2 / 2);
+        double gamma = (x1 + x2) / (2 * sqrt(x1 * x2)), beta = (x1 - x2) / (x1 + x2);
+        P.set(gamma * (P.get(0) + beta * P.get(3)), P.get(1), P.get(2), gamma * (P.get(3) + beta * P.get(0)));
+        k3.set(gamma * (k3.get(0) + beta * k3.get(3)), k3.get(1), k3.get(2), gamma * (k3.get(3) + beta * k3.get(0)));
+
+
+        double t = (k1 - P).mass2(), nT = t / (Mcc2 - s), u = (k1 - k3).mass2();
+        double pT2 = get_pT2(P);
+        double xF = 2 * P.get(3) / ecm;
+        double yPsi = getRapidity(P);
+
+
         if (debug) {
-            cout << "\t s=" << s << ";"<<endl;
-            cout<<" x1="<<x1<<"; x2="<<x2<<";"<<endl;
-            cout<<" gamma="<<gamma<<"; beta="<<beta<<";"<<endl;
-            cout << "\t k1=" << k1 << "; k2=" << k2 << ";"<<endl;
-            cout << "\t aP=" << P <<"; P^2="<<P.mass2()<< "; ak3=" << k3 << "; k3^2="<<k3.mass2()<<";"<<endl;
-            cout<<" Ptot="<<k1+k2<<"="<<P+k3<<endl;
-            cout << "\t t="<<t<<"; nT="<<nT<<" u="<<u<<"; s+t+u="<<s+t+u<<endl;
+            cout << "\t s=" << s << ";" << endl;
+            cout << " x1=" << x1 << "; x2=" << x2 << ";" << endl;
+            cout << " gamma=" << gamma << "; beta=" << beta << ";" << endl;
+            cout << "\t k1=" << k1 << "; k2=" << k2 << ";" << endl;
+            cout << "\t aP=" << P << "; P^2=" << P.mass2() << "; ak3=" << k3 << "; k3^2=" << k3.mass2() << ";" << endl;
+            cout << " Ptot=" << k1 + k2 << "=" << P + k3 << endl;
+            cout << "\t t=" << t << "; nT=" << nT << " u=" << u << "; s+t+u=" << s + t + u << endl;
         };
 
-        
+
         wt *= (s - Mcc2);
         // conversion to dsdt
         wt *= 1. / (64 * PI * s)*4 / s;
         // symmetry, etc
         wt *= 1. / (2 * 2 * 8 * 2 * 8);
         // tranfer to nb
-        wt *= 0.389*1e6;
+        wt *= 0.389 * 1e6;
 
         double mtr2 = 0, mtr;
         if (debug)
@@ -229,23 +240,31 @@ int main(int argc, char **argv) {
         };
         double mtr0 = hMatr[0]->Interpolate(nT, xs), mtr20 = pow(mtr0, 2);
         //    TNtuple tup("tup", "tup", "hatS:pT2:xF:nT:x1:x2:y:mtr2:mtr20:pdf1:pdf2:wt");
-        tup.Fill(s, pT2, xF, nT, x1, x2, y, getRapidity(P), mtr2, mtr20, pdf1, pdf2, wt);
-        
+        tup.Fill(s, pT2, xF, nT, x1, x2, y, yPsi, mtr2, mtr20, pdf1, pdf2, wt);
+
         // fill histograms
-        h_mFinal->Fill(sqrt(s),mtr2*pdf1*pdf2*wt);
-        h_pT2->Fill(get_pT2(P), mtr2*pdf1*pdf2*wt);
-        h_yPsi->Fill(getRapidity(P),mtr2*pdf1*pdf2*wt);
-        h_xF->Fill(xF,mtr2*pdf1*pdf2*wt);
+        h_mFinal->Fill(sqrt(s), mtr2 * pdf1 * pdf2 * wt);
+        h_pT2->Fill(get_pT2(P), mtr2 * pdf1 * pdf2 * wt);
+        h_yPsi->Fill(yPsi, mtr2 * pdf1 * pdf2 * wt);
+        h_xF->Fill(xF, mtr2 * pdf1 * pdf2 * wt);
 
     };
     tup.Write();
-    
-    string hist_name="_e"+f_to_string(mom)+"_d"+f_to_string(delta)+"_a"+f_to_string(alpha)+"_"+pdfName+".hst";
-    
-    h_mFinal->Scale(1./nEv); h_mFinal->Write(); saveHST(h_mFinal,prefix+"m"+hist_name);
-    h_pT2->Scale(1./nEv); h_pT2->Write(); saveHST(h_pT2,prefix+"pT2"+hist_name);
-    h_yPsi->Scale(1./nEv); h_yPsi->Write(); saveHST(h_yPsi,prefix+"yPsi"+hist_name);
-    h_xF->Scale(1./nEv); h_xF->Write(); saveHST(h_xF,prefix+"xF"+hist_name);
+
+    string hist_name = "_e" + f_to_string(mom) + "_d" + f_to_string(delta) + "_a" + f_to_string(alpha) + "_" + pdfName + ".hst";
+
+    h_mFinal->Scale(1. / nEv);
+    h_mFinal->Write();
+    saveHST(h_mFinal, prefix + "m" + hist_name);
+    h_pT2->Scale(1. / nEv);
+    h_pT2->Write();
+    saveHST(h_pT2, prefix + "pT2" + hist_name);
+    h_yPsi->Scale(1. / nEv);
+    h_yPsi->Write();
+    saveHST(h_yPsi, prefix + "yPsi" + hist_name);
+    h_xF->Scale(1. / nEv);
+    h_xF->Write();
+    saveHST(h_xF, prefix + "xF" + hist_name);
     out_file.Save();
 
     return 0;
