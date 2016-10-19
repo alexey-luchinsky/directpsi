@@ -1,0 +1,20 @@
+# calclate not-integrated matix elements
+./calcInts.exe -a 3 -m 9.62 -M 150 -n 7
+# 25 min at IHEP
+
+# calculate integrated matrix elements
+time ./double_export.exe -i matr.root -s 20 -t 20 -d 0.01 -o inter001.root
+time ./double_export.exe -i matr.root -s 20 -t 20 -d 0.4 -o inter04.root
+# 44 secs for each
+
+# hadronic distributions for U70
+time ./hadronic.exe -e 70 --prefix ../results/U70/ -i inter04.root -n 7
+time ./hadronic.exe -e 70 --prefix ../results/U70/ -i inter001.root -n 7
+# 3 mins for each
+
+
+# hadronic distributions for PANDA
+time ./hadronic.exe -e 16 --prefix ../results/PANDA/ -i inter04.root -n 7
+time ./hadronic.exe -e 16 --prefix ../results/PANDA/ -i inter001.root -n 7
+# 2m20s for each
+
