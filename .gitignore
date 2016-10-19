@@ -2,3 +2,6 @@ build
 nbproject
 Makefile
 figures/.ipynb_checkpoints
+results/U70/*.hst
+results/PANDA/*.hst
+
