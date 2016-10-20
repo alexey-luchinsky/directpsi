@@ -1,6 +1,8 @@
+#------------- U70 -----------------------------
 # calclate not-integrated matix elements
 ./calcInts.exe -a 3 -m 9.62 -M 150 -n 7
 # 25 min at IHEP
+
 
 # calculate integrated matrix elements
 time ./double_export.exe -i matr.root -s 20 -t 20 -d 0.01 -o inter001.root
@@ -12,9 +14,24 @@ time ./hadronic.exe -e 70 --prefix ../results/U70/ -i inter04.root -n 7
 time ./hadronic.exe -e 70 --prefix ../results/U70/ -i inter001.root -n 7
 # 3 mins for each
 
+#======== PANDA ==============
+# un-integrated matrix elements for PANDA
+time ./calcInts.exe -a 3 -m 9.62 -M 40 -n 7 -o ../results/PANDA/matr.root
+# 25 min
+
+# integrated matrix elememts for PANDA
+time ./double_export.exe -i ../results/PANDA/matr.root -s 20 -t 20 -d 0.4 -o ../results/PANDA/inter04.root
+time ./double_export.exe -i ../results/PANDA/matr.root -s 20 -t 20 -d 0.01 -o ../results/PANDA/inter001.root
+# 30 secs for each
+
+# create bins
+root -b 'gen_bins.C(3.2, 4, 20, 2, "../results/PANDA/bins_m.txt")'
+root -b 'gen_bins.C(0, 1, 20, 1, "../results/PANDA/bins_xF.txt")'
+root -b 'gen_bins.C(0, 3, 20, 2, "../results/PANDA/bins_pT2.txt")'
+root -b 'gen_bins.C(-0.5, 0.5, 20, 1, "../PANDA/results/bins_yPsi.txt")'
 
 # hadronic distributions for PANDA
-time ./hadronic.exe -e 16 --prefix ../results/PANDA/ -i inter04.root -n 7
-time ./hadronic.exe -e 16 --prefix ../results/PANDA/ -i inter001.root -n 7
+time ./hadronic.exe -e 16 --prefix ../results/PANDA/ -n 7 -i ../results/PANDA/inter04.root
+time ./hadronic.exe -e 16 --prefix ../results/PANDA/ -n 7 -i ../results/PANDA/inter001.root
 # 2m20s for each
 
