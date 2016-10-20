@@ -28,7 +28,7 @@ time ./double_export.exe -i ../results/PANDA/matr.root -s 20 -t 20 -d 0.01 -o ..
 root -b 'gen_bins.C(3.2, 4, 20, 2, "../results/PANDA/bins_m.txt")'
 root -b 'gen_bins.C(0, 1, 20, 1, "../results/PANDA/bins_xF.txt")'
 root -b 'gen_bins.C(0, 3, 20, 2, "../results/PANDA/bins_pT2.txt")'
-root -b 'gen_bins.C(-0.5, 0.5, 20, 1, "../PANDA/results/bins_yPsi.txt")'
+root -b 'gen_bins.C(-0.5, 0.5, 20, 1, "../results/PANDA/bins_yPsi.txt")'
 
 # hadronic distributions for PANDA
 time ./hadronic.exe -e 16 --prefix ../results/PANDA/ -n 7 -i ../results/PANDA/inter04.root
