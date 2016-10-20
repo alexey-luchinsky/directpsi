@@ -27,7 +27,6 @@ SET_COMPILE_FLAG(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS}"
 
 include_directories(~/local/include)
 
-
 include_directories(src)
 include_directories(${ROOT_INCLUDE_DIR})
 include_directories(/usr/local/Cellar/boost/1.58.0/include/)
@@ -59,12 +58,21 @@ add_executable (partonic.exe "src/partonic.c++" "src/utils.c++")
 target_link_libraries(partonic.exe ${ROOT_LIBRARIES})
 
 #adding sources for hadronic
+## search for LHAPDF_INC
+## search for LHAPDF libs
+EXEC_PROGRAM(lhapdf-config
+    ARGS "--incdir"
+    OUTPUT_VARIABLE LHAPDF_INC
+)
+MESSAGE("LHAPDF_INC=" ${LHAPDF_INC})
+include_directories(${LHAPDF_INC})
+
 ## search for LHAPDF libs
 EXEC_PROGRAM(lhapdf-config
     ARGS "--libs"
     OUTPUT_VARIABLE LHAPDF_LIBS
 )
-MESSAGE("LHAPDF_LIBS" ${LHAPDF_LIBS})
+MESSAGE("LHAPDF_LIBS=" ${LHAPDF_LIBS})
 
 # adding sources for hadronic
 #add_executable (hadronic.exe "src/hadronic.c++" "src/utils.c++")
