@@ -110,7 +110,7 @@ int main(int argc, char **argv) {
 
 
     const int imem = 0;
-    const PDF *pdf = mkPDF(pdfName);
+    const PDF *pdf = mkPDF(pdfName.c_str());
 
     double Mcc2 = Mcc*Mcc, scale2 = Mcc2;
     save_pdf(pdf, scale2);
