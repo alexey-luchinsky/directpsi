@@ -19,7 +19,7 @@ void saveHST(TH1D *hist, TString name, bool print = false);
 double wave_function(double q2, double delta);
 const int nMatr = 26;
 const double PI=acos(-1.);
-double const Mcc=3.1;
+double const Mcc=3.1, Mcc2=Mcc*Mcc;
 double const mp=0.938;
 
 double get_pT2(EvtVector4R P);

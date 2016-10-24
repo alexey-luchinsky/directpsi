@@ -26,6 +26,7 @@ double sMin, sMax, alpha;
 int nEv;
 string pdfName;
 int nBins;
+string scale_string;
 
 bool load_integrals() {
     hist_file = new TFile(in_fileName.c_str(), "READ");
@@ -59,6 +60,7 @@ bool init_commandline_args(int argc, char **argv) {
         TCLAP::ValueArg<string> pdfName_arg("p", "pdf", "pdf set name", false, "CT10", "string", cmd);
         TCLAP::ValueArg<string> prefix_arg("", "prefix", "prefix for saved files", false, "", "string", cmd);
         TCLAP::ValueArg<int> nDebug_arg("", "debug", "number of debug events", false, 0, "int", cmd);
+        TCLAP::ValueArg<string> scale_arg("", "scale", "scale (fixed, run, half or double)", false, "fixed", "string", cmd);
         cmd.parse(argc, argv);
         in_fileName = in_agr.getValue();
         out_fileName = out_arg.getValue();
@@ -72,6 +74,12 @@ bool init_commandline_args(int argc, char **argv) {
         pdfName = pdfName_arg.getValue();
         prefix = prefix_arg.getValue();
         nDebug = nDebug_arg.getValue();
+        scale_string = scale_arg.getValue();
+        cout << scale_string<<" "<<(scale_string=="fixed")<<endl;
+        if(scale_string != "fixed" && scale_string!="run" && scale_string!="half" && scale_string!="double") {
+            cout<<"Wrong scale "<<scale_string<<endl;
+            ::exit(-1);
+        };
         return true;
     } catch (TCLAP::ArgException e) {
         cout << " error " << e.error() << " for arg " << e.argId() << endl;
@@ -105,6 +113,19 @@ vector<double> read_bins(string file_name) {
     return bins;
 }
 
+double getScale2(string scl_string, EvtVector4R p) {
+    if (scl_string == "fixed")
+        return Mcc2;
+    else if (scl_string == "run")
+        return Mcc2 + get_pT2(p);
+    else if (scl_string == "half")
+        return (Mcc2 + get_pT2(p)) / 2;
+    else if (scl_string == "double")
+        return 2 * (Mcc2 + get_pT2(p));
+    else
+        return 0;
+}
+
 int main(int argc, char **argv) {
     init_commandline_args(argc, argv);
 
@@ -112,7 +133,7 @@ int main(int argc, char **argv) {
     const int imem = 0;
     const PDF *pdf = mkPDF(pdfName.c_str());
 
-    double Mcc2 = Mcc*Mcc, scale2 = Mcc2;
+    double scale2 = Mcc2;
     save_pdf(pdf, scale2);
 
     if (!load_integrals()) {
@@ -179,6 +200,7 @@ int main(int argc, char **argv) {
         ram.setECM(ecm);
         if (!ram.next()) continue;
         P = *ram.getV(0);
+        scale2 = getScale2(scale_string, P);
         k3 = *ram.getV(1);
         if (debug) {
             cout << " before boost:" << endl;
@@ -251,7 +273,7 @@ int main(int argc, char **argv) {
     };
     tup.Write();
 
-    string hist_name = "_e" + f_to_string(mom) + "_d" + f_to_string(delta) + "_a" + f_to_string(alpha) + "_" + pdfName + ".hst";
+    string hist_name = "_e" + f_to_string(mom) + "_d" + f_to_string(delta) + "_a" + f_to_string(alpha) + "_" + pdfName + "_" + scale_string + ".hst";
 
     h_mFinal->Scale(1. / nEv);
     h_mFinal->Write();
